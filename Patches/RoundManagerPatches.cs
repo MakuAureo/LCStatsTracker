@@ -36,12 +36,13 @@ internal class RoundManagerPatches
       }
     }
 
+    StatsTracker.LocalServer.Reset();
     StatsTracker.DayStats = new(
         __instance.playersManager.randomMapSeed,
         __instance.currentLevel.PlanetName,
-        __instance.currentLevel.currentWeather,
+        __instance.currentLevel.currentWeather.ToString(),
         spawnedScrap.Length,
-        __instance.indoorFog.gameObject.active,
+        __instance.indoorFog.gameObject.activeSelf,
         __instance.dungeonFlowTypes[__instance.currentDungeonType].dungeonFlow.name,
         is_sid ? first.itemProperties.name : null,
         __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null);
