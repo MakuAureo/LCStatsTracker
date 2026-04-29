@@ -9,7 +9,7 @@ public class HttpSSE
   private HttpListener? listener;
   private string? current_json = null;
   private Thread? server_thread;
-  private const int PORT = 54321;
+  private const int PORT = 2145;
   private readonly ManualResetEvent day_finished_signaler = new ManualResetEvent(false);
 
   public void Start()

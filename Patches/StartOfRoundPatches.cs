@@ -1,5 +1,5 @@
 using HarmonyLib;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace StatsTracker.Patches;
 
@@ -10,6 +10,6 @@ internal class StartOfRoundPatches
   [HarmonyPostfix]
   private static void PostPassTimeToNextDay()
   {
-    StatsTracker.LocalServer.PublishStats(JsonSerializer.Serialize(StatsTracker.DayStats));
+    StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
   }
 }
