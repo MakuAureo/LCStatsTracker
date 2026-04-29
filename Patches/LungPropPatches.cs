@@ -9,7 +9,7 @@ internal class LungPropPatches
   [HarmonyPostfix]
   private static void PostStart(LungProp __instance)
   {
-    StatsTracker.DayStats?.has_app = true;
-    StatsTracker.DayStats?.moon_info.item_count += 1;
+    StatsTracker.DayStats?.AppSpawned = true;
+    StatsTracker.DayStats?.DungeonInfo.ItemCount += 1;
   }
 }

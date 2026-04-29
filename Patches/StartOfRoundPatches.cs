@@ -19,7 +19,7 @@ internal class StartOfRoundPatches
   [HarmonyPrefix]
   private static void EndOfGameClientRpc(StartOfRound __instance, int bodiesInsured, int daysPlayersSurvived, int connectedPlayersOnServer, int scrapCollectedOnServer)
   {
-    StatsTracker.DayStats?.topline = scrapCollectedOnServer;
+    StatsTracker.DayStats?.TopLine = scrapCollectedOnServer;
   }
 
   [HarmonyPatch(nameof(StartOfRound.PassTimeToNextDay))]

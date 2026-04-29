@@ -5,137 +5,153 @@ namespace StatsTracker.Util;
 
 internal class PlayerStats
 {
-  public bool alive;
-  public string? time_of_death;
-  public string? death_cause;
+  public bool Alive;
+  public string? TimeOfDeath;
+  public string? CauseOfDeath;
 
   public PlayerStats()
   {
-    alive = true;
+    Alive = true;
   }
 
-  public void Died(string time_of_death, string death_cause)
+  public void Died(string TimeOfDeath, string CauseOfDeath)
   {
-    this.alive = false;
-    this.time_of_death = time_of_death;
-    this.death_cause = death_cause;
+    this.Alive = false;
+    this.TimeOfDeath = TimeOfDeath;
+    this.CauseOfDeath = CauseOfDeath;
   }
 }
 
 internal class KiwiBirdInfo
 {
-  public bool spawned;
-  public int[]? eggs;
+  public bool Spawned;
+  public int[]? Eggs;
 
   public KiwiBirdInfo(bool spawned)
   {
-    this.spawned = spawned;
+    this.Spawned = spawned;
   }
 
   public void AddEggValue(int[] eggs) {
-    this.eggs = eggs;
+    this.Eggs = eggs;
   }
 }
 
 internal class BeeInfo
 {
-  public int bee_count;
-  public int[]? bees;
+  public int BeeCount;
+  public int[]? Bees;
 
-  public BeeInfo(int bee_count)
+  public BeeInfo(int BeeCount)
   {
-    this.bee_count = bee_count;
+    this.BeeCount = BeeCount;
   }
 
-  public void AddBeeValue(int[] bees)
+  public void AddBeeValue(int[] Bees)
   {
-    this.bees = bees;
+    this.Bees = Bees;
   }
 }
 
 internal class ItemInfo
 {
-  public int value;
-  public string name;
-  public Vector3 starting_position;
+  public int Value;
+  public string ItemType;
+  public Vector3 DespawnPosition;
 
-  public ItemInfo(string name, int value, Vector3 starting_position)
+  public ItemInfo(string Name, int Value, Vector3 DespawnPosition)
   {
-    this.name = name;
-    this.value = value;
-    this.starting_position = starting_position;
+    this.ItemType = Name;
+    this.Value = Value;
+    this.DespawnPosition = DespawnPosition;
   }
 }
 
 internal class HazardInfo
 {
-  public int turret_count;
-  public int landmine_count;
-  public int spiketrap_count;
+  public int TurretCount;
+  public int LandmineCount;
+  public int SpiketrapCount;
 
-  public HazardInfo(int turretCount, int landmineCount, int spiketrapCount)
+  public HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
   {
-    this.turret_count = turretCount;
-    this.landmine_count = landmineCount;
-    this.spiketrap_count = spiketrapCount;
+    this.TurretCount = TurretCount;
+    this.LandmineCount = LandmineCount;
+    this.SpiketrapCount = SpiketrapCount;
   }
 }
 
 internal class MoonInfo
 {
-  public string name;
-  public string weather;
-  public string? interior;
-  public int item_count;
+  public string Name;
+  public string Weather;
 
-  public MoonInfo(string name, string weather) 
+  public MoonInfo(string Name, string Weather) 
   {
-    this.name = name;
-    this.weather = weather;
+    this.Name = Name;
+    this.Weather = Weather;
+  }
+}
+
+internal class DungeonInfo
+{
+  public int ItemCount;
+  public string Interior;
+
+  public DungeonInfo(int ItemCount, string Interior)
+  {
+    this.ItemCount = ItemCount;
+    this.Interior = Interior;
   }
 }
 
 internal class Stats
 {
-  public MoonInfo moon_info;
+  public MoonInfo MoonInfo;
+  public DungeonInfo? DungeonInfo;
 
-  public BeeInfo? bee_info;
-  public KiwiBabyItem? bird_info;
+  public BeeInfo? BeeInfo;
+  public KiwiBabyItem? BirdInfo;
   
-  public List<ItemInfo> missed_items;
+  public List<ItemInfo> MissedItems;
   
-  public Dictionary<EnemyType, string> indoor_spawns;
-  public Dictionary<EnemyType, string> outdoor_spawns;
+  public Dictionary<EnemyType, string> IndoorSpawns;
+  public Dictionary<EnemyType, string> DayTimeSpawns;
+  public Dictionary<EnemyType, string> NightTimeSpawns;
   
-  public Dictionary<ulong, PlayerStats> player_stats;
+  public Dictionary<ulong, PlayerStats> Players;
 
-  public int seed;
+  public int Seed;
 
-  public int shotguns_collected;
-  public int knifes_collected;
+  public int ShotgunsCollected;
+  public int KnivesCollected;
   
-  public int topline;
-  public int botline;
-  public int botline_true;
+  public int TopLine;
+  public int BottomLine;
+  public int BottomLineTrue;
   
-  public bool has_app;
-  public bool indoor_fog;
-  public string? SID;
-  public string? infestation_type;
-  public string? meteor_shower_time;
+  public bool AppSpawned;
+  public bool IndoorFog;
+  public string? SIDType;
+  public string? InfestationType;
+  public string? MeteorShowerTime;
 
-  public Stats(int seed, string moon_name, string weather)
+  public Stats(int seed, string moonName, string weather, ulong[] allPlayerIDs)
   {
-    moon_info = new(moon_name, weather);
-    missed_items = new();
-    indoor_spawns = new();
-    outdoor_spawns = new();
-    player_stats = new();
-    this.seed = seed;
-    shotguns_collected = 0;
-    knifes_collected = 0;
-    topline = 0;
-    botline = 0;
-    botline_true = 0;
+    MoonInfo = new(moonName, weather);
+    MissedItems = new();
+    IndoorSpawns = new();
+    DayTimeSpawns = new();
+    NightTimeSpawns = new();
+    Players = new();
+    Seed = seed;
+    ShotgunsCollected = 0;
+    KnivesCollected = 0;
+    TopLine = 0;
+    BottomLine = 0;
+    BottomLineTrue = 0;
+
+    foreach (ulong playerID in allPlayerIDs)
+      Players[playerID] = new();
   }
 }

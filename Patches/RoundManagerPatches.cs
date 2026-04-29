@@ -39,10 +39,9 @@ internal class RoundManagerPatches
       }
     }
 
-    StatsTracker.DayStats?.moon_info.item_count += spawnedScrap.Length;
-    StatsTracker.DayStats?.moon_info.interior = StatsTracker.InteriorNames[__instance.currentDungeonType];
-    StatsTracker.DayStats?.SID = is_sid ? first.itemProperties.name : null;
-    StatsTracker.DayStats?.indoor_fog = __instance.indoorFog.gameObject.activeSelf;
-    StatsTracker.DayStats?.infestation_type = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null;
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length, StatsTracker.InteriorNames[__instance.currentDungeonType]);
+    StatsTracker.DayStats?.SIDType = is_sid ? first.itemProperties.name : null;
+    StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
+    StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null;
   }
 }
