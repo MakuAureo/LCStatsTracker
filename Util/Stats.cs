@@ -120,6 +120,7 @@ internal class Stats
   public int botline;
   public int botline_true;
   
+  public bool has_app;
   public bool indoor_fog;
   public string? SID;
   public string? infestation_type;

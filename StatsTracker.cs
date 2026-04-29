@@ -13,6 +13,7 @@ public class StatsTracker : BaseUnityPlugin
 
     internal static Util.Stats DayStats = null!;
     internal static Util.HttpSSE LocalServer = new();
+    internal static string[] InteriorNames = { "Facility", "Mansion", "UnusedFacility", "Facility", "Mineshaft" };
 
     private void Awake()
     {

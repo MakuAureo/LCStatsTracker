@@ -68,7 +68,7 @@ public class HttpSSE
 
     day_finished_signaler.WaitOne();
 
-    var data = $"data: {current_json}\n\n";
+    var data = $"Stats: {current_json}\n\n";
     var buffer = Encoding.UTF8.GetBytes(data);
     response.OutputStream.Write(buffer, 0, buffer.Length);
     response.OutputStream.Flush();

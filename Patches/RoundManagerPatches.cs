@@ -10,7 +10,6 @@ internal class RoundManagerPatches
   [HarmonyPrefix]
   private static void PreSyncScrapValuesClientRpc(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
   {
-    bool is_sid = true;
     spawnedScrap[0].TryGet(out var firstNetObj);
     GrabbableObject first = firstNetObj.GetComponent<GrabbableObject>();
     if (first == null) 
@@ -19,6 +18,7 @@ internal class RoundManagerPatches
       return;
     }
 
+    bool is_sid = true;
     foreach (NetworkObjectReference netObjRef in spawnedScrap)
     {
       netObjRef.TryGet(out var netObj);
@@ -40,10 +40,10 @@ internal class RoundManagerPatches
     StatsTracker.DayStats = new(
         __instance.playersManager.randomMapSeed,
         __instance.currentLevel.PlanetName,
-        __instance.currentLevel.currentWeather.ToString(),
+        __instance.currentLevel.currentWeather == LevelWeatherType.None ? "Mild" : (__instance.currentLevel.currentWeather.ToString() ?? "Null?"),
         spawnedScrap.Length,
         __instance.indoorFog.gameObject.activeSelf,
-        __instance.dungeonFlowTypes[__instance.currentDungeonType].dungeonFlow.name,
+        StatsTracker.InteriorNames[__instance.currentDungeonType],
         is_sid ? first.itemProperties.name : null,
         __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null);
   }
