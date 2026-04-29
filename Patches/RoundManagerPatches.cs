@@ -39,9 +39,11 @@ internal class RoundManagerPatches
       }
     }
 
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length, StatsTracker.InteriorNames[__instance.currentDungeonType]);
-    StatsTracker.DayStats?.SIDType = is_sid ? first.itemProperties.name : null;
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (LungPropPatches.AppSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
+    StatsTracker.DayStats?.AppSpawned = LungPropPatches.AppSpawnedThisDay;
+    StatsTracker.DayStats?.SIDType = is_sid ? first.itemProperties.name : "";
     StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
-    StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null;
+    StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : "";
+    LungPropPatches.AppSpawnedThisDay = false;
   }
 }
