@@ -10,6 +10,9 @@ internal class RoundManagerPatches
   [HarmonyPrefix]
   private static void PreSyncScrapValuesClientRpc(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
   {
+    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+      return;
+
     spawnedScrap[0].TryGet(out var firstNetObj);
     GrabbableObject first = firstNetObj.GetComponent<GrabbableObject>();
     if (first == null) 
@@ -36,9 +39,7 @@ internal class RoundManagerPatches
       }
     }
 
-    // TODO: Fix this
     StatsTracker.DayStats?.moon_info.item_count += spawnedScrap.Length;
-
     StatsTracker.DayStats?.moon_info.interior = StatsTracker.InteriorNames[__instance.currentDungeonType];
     StatsTracker.DayStats?.SID = is_sid ? first.itemProperties.name : null;
     StatsTracker.DayStats?.indoor_fog = __instance.indoorFog.gameObject.activeSelf;
