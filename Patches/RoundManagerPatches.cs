@@ -36,15 +36,12 @@ internal class RoundManagerPatches
       }
     }
 
-    StatsTracker.LocalServer.Reset();
-    StatsTracker.DayStats = new(
-        __instance.playersManager.randomMapSeed,
-        __instance.currentLevel.PlanetName,
-        __instance.currentLevel.currentWeather == LevelWeatherType.None ? "Mild" : (__instance.currentLevel.currentWeather.ToString() ?? "Null?"),
-        spawnedScrap.Length,
-        __instance.indoorFog.gameObject.activeSelf,
-        StatsTracker.InteriorNames[__instance.currentDungeonType],
-        is_sid ? first.itemProperties.name : null,
-        __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null);
+    // TODO: Fix this
+    StatsTracker.DayStats?.moon_info.item_count += spawnedScrap.Length;
+
+    StatsTracker.DayStats?.moon_info.interior = StatsTracker.InteriorNames[__instance.currentDungeonType];
+    StatsTracker.DayStats?.SID = is_sid ? first.itemProperties.name : null;
+    StatsTracker.DayStats?.indoor_fog = __instance.indoorFog.gameObject.activeSelf;
+    StatsTracker.DayStats?.infestation_type = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : null;
   }
 }

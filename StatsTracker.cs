@@ -11,7 +11,7 @@ public class StatsTracker : BaseUnityPlugin
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
 
-    internal static Util.Stats DayStats = null!;
+    internal static Util.Stats? DayStats;
     internal static Util.HttpSSE LocalServer = new();
     internal static string[] InteriorNames = { "Facility", "Mansion", "UnusedFacility", "Facility", "Mineshaft" };
 

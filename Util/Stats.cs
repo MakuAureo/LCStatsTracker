@@ -88,12 +88,10 @@ internal class MoonInfo
   public string? interior;
   public int item_count;
 
-  public MoonInfo(string name, string weather, int item_count, string? interior = null) 
+  public MoonInfo(string name, string weather) 
   {
     this.name = name;
     this.weather = weather;
-    this.item_count = item_count;
-    this.interior = interior;
   }
 }
 
@@ -126,9 +124,9 @@ internal class Stats
   public string? infestation_type;
   public string? meteor_shower_time;
 
-  public Stats(int seed, string moon_name, string weather, int item_count, bool indoor_fog, string? interior = null, string? SID = null, string? infestation_type = null)
+  public Stats(int seed, string moon_name, string weather)
   {
-    moon_info = new(moon_name, weather, item_count, interior);
+    moon_info = new(moon_name, weather);
     missed_items = new();
     indoor_spawns = new();
     outdoor_spawns = new();
@@ -139,8 +137,5 @@ internal class Stats
     topline = 0;
     botline = 0;
     botline_true = 0;
-    this.indoor_fog = indoor_fog;
-    this.SID = SID;
-    this.infestation_type = infestation_type;
   }
 }
