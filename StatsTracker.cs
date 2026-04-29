@@ -12,6 +12,7 @@ public class StatsTracker : BaseUnityPlugin
     internal static Harmony? Harmony { get; set; }
 
     internal static Util.Stats DayStats = null!;
+    internal static Util.HttpSSE LocalServer = new();
 
     private void Awake()
     {
@@ -19,7 +20,8 @@ public class StatsTracker : BaseUnityPlugin
         Instance = this;
 
         Patch();
-
+        LocalServer.Start();
+        
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
     }
 

@@ -28,6 +28,8 @@ public class HttpSSE
   {
     listener?.Stop();
     server_thread?.Join();
+
+    StatsTracker.Logger.LogInfo($"Stat server stopped");
   }
 
   public void PublishStats(string json)
