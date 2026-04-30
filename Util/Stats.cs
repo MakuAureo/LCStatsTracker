@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -66,13 +67,13 @@ internal class MissingItemInfo
 {
   public int Value;
   public string ItemType;
-  public Vector3 DespawnPosition;
+  public double[] DespawnPosition;
 
   public MissingItemInfo(string Name, int Value, Vector3 DespawnPosition)
   {
     this.ItemType = Name;
     this.Value = Value;
-    this.DespawnPosition = DespawnPosition;
+    this.DespawnPosition = [ Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1) ];
   }
 }
 
