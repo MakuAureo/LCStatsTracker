@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace StatsTracker.Patches;
 
@@ -39,11 +42,28 @@ internal class RoundManagerPatches
       }
     }
 
+    int totalStartScrapValue = 0;
+    foreach (int scrapValue in allScrapValue)
+      totalStartScrapValue += scrapValue;
+
     StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (LungPropPatches.AppSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
+
     StatsTracker.DayStats?.AppSpawned = LungPropPatches.AppSpawnedThisDay;
+    StatsTracker.DayStats?.BottomLine = totalStartScrapValue;
+    StatsTracker.DayStats?.BottomLineTrue = totalStartScrapValue + (LungPropPatches.AppSpawnedThisDay ? 80 : 0);
+    LungPropPatches.AppSpawnedThisDay = false;
+
     StatsTracker.DayStats?.SIDType = is_sid ? first.itemProperties.name : "";
     StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
     StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : "";
-    LungPropPatches.AppSpawnedThisDay = false;
+  }
+
+  [HarmonyPatch(nameof(RoundManager.DespawnPropsAtEndOfRound))]
+  [HarmonyPrefix]
+  private static void PreDespawnPropsAtEndOfRound(RoundManager __instance)
+  {
+    List<GrabbableObject> missedObjs = new(UnityEngine.Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None));
+    missedObjs.RemoveAll(obj => obj.scrapPersistedThroughRounds && !obj.itemProperties.isScrap);
+    StatsTracker.DayStats?.MissedItems = missedObjs.Select<GrabbableObject, Util.MissingItemInfo>(obj => new(obj.itemProperties.name, obj.scrapValue, obj.transform.position)).ToList();
   }
 }
