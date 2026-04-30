@@ -19,7 +19,7 @@ internal class PlayerStats
     CauseOfDeath = "";
   }
 
-  public void Died(string TimeOfDeath, string CauseOfDeath)
+  public void Kill(string TimeOfDeath, string CauseOfDeath)
   {
     Alive = false;
     this.TimeOfDeath = TimeOfDeath;

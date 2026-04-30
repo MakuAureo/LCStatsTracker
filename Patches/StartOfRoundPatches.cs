@@ -28,4 +28,11 @@ internal class StartOfRoundPatches
   {
     StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
   }
+
+  [HarmonyPatch(nameof(StartOfRound.OnPlayerDC))]
+  [HarmonyPrefix]
+  private static void PreOnPlayerDC(StartOfRound __instance, int playerObjectNumber)
+  {
+    StatsTracker.DayStats?.Players[__instance.allPlayerScripts[playerObjectNumber].playerSteamId].Disconnect();
+  }
 }

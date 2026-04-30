@@ -70,6 +70,9 @@ internal class RoundManagerPatches
         obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent<VehicleController>() == cruiser && cruiser.magnetedToShip ||
         obj.isInShipRoom);
 
-    StatsTracker.DayStats?.MissedItems = missedObjs.Select<GrabbableObject, Util.MissingItemInfo>(obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position)).ToList();
+    StatsTracker.DayStats?.MissedItems = missedObjs
+      .Select<GrabbableObject, Util.MissingItemInfo>
+      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position))
+      .ToList();
   }
 }
