@@ -6,19 +6,28 @@ namespace StatsTracker.Util;
 internal class PlayerStats
 {
   public bool Alive;
-  public string? TimeOfDeath;
-  public string? CauseOfDeath;
+  public bool Disconnected;
+  public string TimeOfDeath;
+  public string CauseOfDeath;
 
   public PlayerStats()
   {
     Alive = true;
+    Disconnected = false;
+    TimeOfDeath = "";
+    CauseOfDeath = "";
   }
 
   public void Died(string TimeOfDeath, string CauseOfDeath)
   {
-    this.Alive = false;
+    Alive = false;
     this.TimeOfDeath = TimeOfDeath;
     this.CauseOfDeath = CauseOfDeath;
+  }
+
+  public void Disconnect()
+  {
+    Disconnected = true;
   }
 }
 
@@ -53,13 +62,13 @@ internal class BeeInfo
   }
 }
 
-internal class ItemInfo
+internal class MissingItemInfo
 {
   public int Value;
   public string ItemType;
   public Vector3 DespawnPosition;
 
-  public ItemInfo(string Name, int Value, Vector3 DespawnPosition)
+  public MissingItemInfo(string Name, int Value, Vector3 DespawnPosition)
   {
     this.ItemType = Name;
     this.Value = Value;
@@ -113,7 +122,7 @@ internal class Stats
   public BeeInfo? BeeInfo;
   public KiwiBabyItem? BirdInfo;
   
-  public List<ItemInfo> MissedItems;
+  public List<MissingItemInfo> MissedItems;
   
   public Dictionary<EnemyType, string> IndoorSpawns;
   public Dictionary<EnemyType, string> DayTimeSpawns;
@@ -126,7 +135,8 @@ internal class Stats
   public int ShotgunsCollected;
   public int KnivesCollected;
   
-  public int TopLine;
+  public int CollectedNoGift;
+  public int ExtraGiftValue;
   public int BottomLine;
   public int BottomLineTrue;
   
@@ -147,7 +157,7 @@ internal class Stats
     Seed = seed;
     ShotgunsCollected = 0;
     KnivesCollected = 0;
-    TopLine = 0;
+    CollectedNoGift = 0;
     BottomLine = 0;
     BottomLineTrue = 0;
 
