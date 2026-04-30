@@ -15,7 +15,7 @@ internal class PlayerControllerBPatches
       return;
 
     StatsTracker.DayStats?.Players[__instance.playerSteamId]?
-      .Kill(((CauseOfDeath)causeOfDeath).ToString(), 
-        HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false));
+      .Kill(HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false),
+          ((CauseOfDeath)causeOfDeath).ToString());
   }
 }
