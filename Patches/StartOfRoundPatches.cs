@@ -10,8 +10,8 @@ namespace StatsTracker.Patches;
 internal class StartOfRoundPatches 
 {
   [HarmonyPatch(nameof(StartOfRound.ResetPlayersLoadedValueClientRpc))]
-  [HarmonyPostfix]
-  private static void PostResetPlayersLoadedValueClientRpc(StartOfRound __instance)
+  [HarmonyPrefix]
+  private static void PreResetPlayersLoadedValueClientRpc(StartOfRound __instance)
   {
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
@@ -28,5 +28,4 @@ internal class StartOfRoundPatches
   {
     StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
   }
-
 }
