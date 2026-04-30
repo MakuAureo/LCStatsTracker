@@ -7,10 +7,10 @@ namespace StatsTracker.Util;
 public class HttpSSE
 {
   private HttpListener? listener;
-  private string? current_json = null;
-  private Thread? server_thread;
+  private string? currentJson = null;
+  private Thread? serverThread;
   private const int PORT = 2145;
-  private readonly ManualResetEvent day_finished_signaler = new ManualResetEvent(false);
+  private readonly ManualResetEvent dayFinishedSignaler = new ManualResetEvent(false);
 
   public void Start()
   {
@@ -18,8 +18,8 @@ public class HttpSSE
     listener.Prefixes.Add($"http://localhost:{PORT}/");
     listener.Start();
 
-    server_thread = new Thread(ListenLoop) { IsBackground = true };
-    server_thread.Start();
+    serverThread = new Thread(ListenLoop) { IsBackground = true };
+    serverThread.Start();
 
     StatsTracker.Logger.LogInfo($"Stat server running at http://localhost:{PORT}/stats");
   }
@@ -27,21 +27,21 @@ public class HttpSSE
   public void Stop()
   {
     listener?.Stop();
-    server_thread?.Join();
+    serverThread?.Join();
 
     StatsTracker.Logger.LogInfo($"Stat server stopped");
   }
 
   public void PublishStats(string json)
   {
-    current_json = json;
-    day_finished_signaler.Set();
+    currentJson = json;
+    dayFinishedSignaler.Set();
   }
 
   public void Reset()
   {
-    current_json = null;
-    day_finished_signaler.Reset();
+    currentJson = null;
+    dayFinishedSignaler.Reset();
   }
 
   private void ListenLoop()
@@ -66,9 +66,9 @@ public class HttpSSE
     response.Headers.Add("Cache-Control", "no-cache");
     response.Headers.Add("Access-Control-Allow-Origin", "*");
 
-    day_finished_signaler.WaitOne();
+    dayFinishedSignaler.WaitOne();
 
-    var data = $"{{{current_json}}}\n\n";
+    var data = "{" + $"{currentJson}" + "}\n\n";
     var buffer = Encoding.UTF8.GetBytes(data);
     response.OutputStream.Write(buffer, 0, buffer.Length);
     response.OutputStream.Flush();
