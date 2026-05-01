@@ -119,6 +119,7 @@ internal class Stats
 {
   public MoonInfo MoonInfo;
   public DungeonInfo? DungeonInfo;
+  public HazardInfo? HazardInfo;
 
   public BeeInfo? BeeInfo;
   public KiwiBabyItem? BirdInfo;

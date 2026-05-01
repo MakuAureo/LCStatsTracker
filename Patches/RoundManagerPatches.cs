@@ -53,6 +53,9 @@ internal class RoundManagerPatches
     StatsTracker.DayStats?.BottomLineTrue = totalStartScrapValue + (LungPropPatches.AppSpawnedThisDay ? 80 : 0);
     LungPropPatches.AppSpawnedThisDay = false;
 
+    StatsTracker.DayStats?.HazardInfo = new(TurretPatches.turretCount, LandminePatches.landmineCount, SpikeRoofTrapPatches.spiketrapCount);
+    TurretPatches.turretCount = LandminePatches.landmineCount = SpikeRoofTrapPatches.spiketrapCount = 0;
+
     StatsTracker.DayStats?.SIDType = is_sid ? first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText : "";
     StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
     StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : "";
@@ -67,12 +70,12 @@ internal class RoundManagerPatches
     List<GrabbableObject> missedObjs = new(Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None));
     missedObjs.RemoveAll(obj => 
         !obj.itemProperties.isScrap ||
-        obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent<VehicleController>() == cruiser && cruiser.magnetedToShip ||
-        obj.isInShipRoom);
+        obj.isInShipRoom ||
+        cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent<VehicleController>() == cruiser && cruiser.magnetedToShip);
 
     StatsTracker.DayStats?.MissedItems = missedObjs
       .Select<GrabbableObject, Util.MissingItemInfo>
-      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position))
+      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position))
       .ToList();
   }
 }
