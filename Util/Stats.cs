@@ -115,6 +115,18 @@ internal class DungeonInfo
   }
 }
 
+internal class SpawnInfo
+{
+  public string Enemy;
+  public string SpawnTime;
+
+  public SpawnInfo(EnemyType EnemyType, string Time)
+  {
+    this.Enemy = EnemyType.enemyName;
+    this.SpawnTime = Time;
+  }
+}
+
 internal class Stats
 {
   public MoonInfo MoonInfo;
@@ -126,9 +138,9 @@ internal class Stats
   
   public List<MissingItemInfo> MissedItems;
   
-  public Dictionary<EnemyType, string> IndoorSpawns;
-  public Dictionary<EnemyType, string> DayTimeSpawns;
-  public Dictionary<EnemyType, string> NightTimeSpawns;
+  public List<SpawnInfo> IndoorSpawns;
+  public List<SpawnInfo> DayTimeSpawns;
+  public List<SpawnInfo> NightTimeSpawns;
   
   public Dictionary<ulong, PlayerStats> Players;
 
