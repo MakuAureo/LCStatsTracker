@@ -34,32 +34,30 @@ internal class PlayerStats
 
 internal class KiwiBirdInfo
 {
-  public bool Spawned;
-  public int[]? Eggs;
+  public List<int> EggValues;
 
-  public KiwiBirdInfo(bool spawned)
+  public KiwiBirdInfo()
   {
-    this.Spawned = spawned;
+    this.EggValues = new();
   }
 
-  public void AddEggValue(int[] eggs) {
-    this.Eggs = eggs;
+  public void AddEggValue(int value) {
+    EggValues.Add(value);
   }
 }
 
 internal class BeeInfo
 {
-  public int BeeCount;
-  public int[]? Bees;
+  public List<int> Values;
 
-  public BeeInfo(int BeeCount)
+  public BeeInfo()
   {
-    this.BeeCount = BeeCount;
+    this.Values = new();
   }
 
-  public void AddBeeValue(int[] Bees)
+  public void AddBeeValue(int value)
   {
-    this.Bees = Bees;
+    Values.Add(value);;
   }
 }
 
@@ -134,7 +132,7 @@ internal class Stats
   public HazardInfo? HazardInfo;
 
   public BeeInfo? BeeInfo;
-  public KiwiBabyItem? BirdInfo;
+  public KiwiBirdInfo? BirdInfo;
   
   public List<MissingItemInfo> MissedItems;
   
