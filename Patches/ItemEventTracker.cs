@@ -6,12 +6,13 @@ using UnityEngine;
 
 namespace StatsTracker.Patches;
 
-[HarmonyPatch(typeof(RoundManager))]
-internal class RoundManagerPatches
+internal class ItemEventTracker
 {
-  [HarmonyPatch(nameof(RoundManager.SyncScrapValuesClientRpc))]
+  public static bool AppSpawnedThisDay = false;
+
+  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
   [HarmonyPrefix]
-  private static void PreSyncScrapValuesClientRpc(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
+  private static void TrackItemsAndDayEvents(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
   {
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
@@ -46,24 +47,24 @@ internal class RoundManagerPatches
     foreach (int scrapValue in allScrapValue)
       totalStartScrapValue += scrapValue;
 
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (LungPropPatches.AppSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (AppSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
 
-    StatsTracker.DayStats?.AppSpawned = LungPropPatches.AppSpawnedThisDay;
+    StatsTracker.DayStats?.AppSpawned = AppSpawnedThisDay;
     StatsTracker.DayStats?.BottomLine = totalStartScrapValue;
-    StatsTracker.DayStats?.BottomLineTrue = totalStartScrapValue + (LungPropPatches.AppSpawnedThisDay ? 80 : 0);
-    LungPropPatches.AppSpawnedThisDay = false;
+    StatsTracker.DayStats?.BottomLineTrue = totalStartScrapValue + (AppSpawnedThisDay ? 80 : 0);
+    AppSpawnedThisDay = false;
 
-    StatsTracker.DayStats?.HazardInfo = new(TurretPatches.turretCount, LandminePatches.landmineCount, SpikeRoofTrapPatches.spiketrapCount);
-    TurretPatches.turretCount = LandminePatches.landmineCount = SpikeRoofTrapPatches.spiketrapCount = 0;
+    StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
+    HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
 
     StatsTracker.DayStats?.SIDType = is_sid ? first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText : "";
     StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
     StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : "";
   }
 
-  [HarmonyPatch(nameof(RoundManager.DespawnPropsAtEndOfRound))]
+  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
   [HarmonyPrefix]
-  private static void PreDespawnPropsAtEndOfRound(RoundManager __instance)
+  private static void TrackMissedItems(RoundManager __instance)
   {
     VehicleController cruiser = Object.FindAnyObjectByType<VehicleController>();
 
@@ -77,5 +78,12 @@ internal class RoundManagerPatches
       .Select<GrabbableObject, Util.MissingItemInfo>
       (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position))
       .ToList();
+  }
+
+  [HarmonyPatch(typeof(LungProp), nameof(LungProp.Start))]
+  [HarmonyPostfix]
+  private static void CountApp(LungProp __instance)
+  {
+    AppSpawnedThisDay = true;
   }
 }

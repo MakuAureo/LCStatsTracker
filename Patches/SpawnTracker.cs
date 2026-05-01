@@ -3,11 +3,11 @@ using HarmonyLib;
 namespace StatsTracker.Patches;
 
 [HarmonyPatch(typeof(EnemyAI))]
-internal class EnemyAIPatches
+internal class SpawnTracker
 {
   [HarmonyPatch(nameof(EnemyAI.Start))]
   [HarmonyPostfix]
-  private static void PostStart(EnemyAI __instance)
+  private static void TrackSpawn(EnemyAI __instance)
   {
     if (__instance.enemyType.isOutsideEnemy)
       StatsTracker.DayStats?.NightTimeSpawns.Add(new(__instance.enemyType, HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false)));

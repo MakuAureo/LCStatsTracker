@@ -6,12 +6,11 @@ using Unity.Netcode;
 
 namespace StatsTracker.Patches;
 
-[HarmonyPatch(typeof(StartOfRound))]
-internal class StartOfRoundPatches 
+internal class ServerEvents 
 {
-  [HarmonyPatch(nameof(StartOfRound.ResetPlayersLoadedValueClientRpc))]
+  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ResetPlayersLoadedValueClientRpc))]
   [HarmonyPrefix]
-  private static void PreResetPlayersLoadedValueClientRpc(StartOfRound __instance)
+  private static void StartTrackingNewday(StartOfRound __instance)
   {
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
@@ -22,17 +21,10 @@ internal class StartOfRoundPatches
         new List<GameNetcodeStuff.PlayerControllerB>(new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1)).ConvertAll(pcb => pcb.playerSteamId).ToArray());
   }
 
-  [HarmonyPatch(nameof(StartOfRound.PassTimeToNextDay))]
+  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay))]
   [HarmonyPostfix]
-  private static void PostPassTimeToNextDay()
+  private static void PublishDayStats()
   {
     StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
-  }
-
-  [HarmonyPatch(nameof(StartOfRound.OnPlayerDC))]
-  [HarmonyPrefix]
-  private static void PreOnPlayerDC(StartOfRound __instance, int playerObjectNumber)
-  {
-    StatsTracker.DayStats?.Players[__instance.allPlayerScripts[playerObjectNumber].playerSteamId].Disconnect();
   }
 }
