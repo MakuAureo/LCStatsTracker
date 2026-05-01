@@ -2,6 +2,7 @@ using HarmonyLib;
 
 namespace StatsTracker.Patches;
 
+[HarmonyPatch]
 internal class HazardTracker
 {
   public static int turretCount = 0;

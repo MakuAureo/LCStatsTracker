@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace StatsTracker.Patches;
 
+[HarmonyPatch]
 internal class ItemEventTracker
 {
   public static bool AppSpawnedThisDay = false;
@@ -50,8 +51,8 @@ internal class ItemEventTracker
     StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (AppSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
 
     StatsTracker.DayStats?.AppSpawned = AppSpawnedThisDay;
-    StatsTracker.DayStats?.BottomLine = totalStartScrapValue;
-    StatsTracker.DayStats?.BottomLineTrue = totalStartScrapValue + (AppSpawnedThisDay ? 80 : 0);
+    StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
+    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue + (AppSpawnedThisDay ? 80 : 0);
     AppSpawnedThisDay = false;
 
     StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);

@@ -41,8 +41,8 @@ internal class KiwiBirdInfo
     this.EggValues = new();
   }
 
-  public void AddEggValue(int value) {
-    EggValues.Add(value);
+  public void AddEggValue(int[] values) {
+    EggValues.AddRange(values);
   }
 }
 
@@ -131,8 +131,8 @@ internal class Stats
   public DungeonInfo? DungeonInfo;
   public HazardInfo? HazardInfo;
 
-  public BeeInfo? BeeInfo;
-  public KiwiBirdInfo? BirdInfo;
+  public BeeInfo BeeInfo;
+  public KiwiBirdInfo BirdInfo;
   
   public List<MissingItemInfo> MissedItems;
   
@@ -161,6 +161,8 @@ internal class Stats
   public Stats(int seed, string moonName, string weather, ulong[] allPlayerIDs)
   {
     MoonInfo = new(moonName, weather);
+    BeeInfo = new();
+    BirdInfo = new();
     MissedItems = new();
     IndoorSpawns = new();
     DayTimeSpawns = new();

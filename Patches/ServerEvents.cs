@@ -6,6 +6,7 @@ using Unity.Netcode;
 
 namespace StatsTracker.Patches;
 
+[HarmonyPatch]
 internal class ServerEvents 
 {
   [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ResetPlayersLoadedValueClientRpc))]

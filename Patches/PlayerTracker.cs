@@ -4,6 +4,7 @@ using Unity.Netcode;
 
 namespace StatsTracker.Patches;
 
+[HarmonyPatch]
 internal class PlayerTracker
 {
   [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayerClientRpc))]
@@ -14,7 +15,7 @@ internal class PlayerTracker
       return;
 
     StatsTracker.DayStats?.Players[__instance.playerSteamId]?
-      .Kill(HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false),
+      .Kill(StatsTracker.GetCurrentTimeString(),
           ((CauseOfDeath)causeOfDeath).ToString());
   }
 

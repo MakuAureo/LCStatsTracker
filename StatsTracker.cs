@@ -45,4 +45,9 @@ public class StatsTracker : BaseUnityPlugin
 
         Logger.LogDebug("Finished unpatching!");
     }
+
+    internal static string GetCurrentTimeString()
+    {
+      return HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false);
+    }
 }
