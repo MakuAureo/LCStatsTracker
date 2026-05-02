@@ -154,9 +154,9 @@ internal class Stats
   
   public bool AppSpawned;
   public bool IndoorFog;
-  public string? SIDType;
-  public string? InfestationType;
-  public string? MeteorShowerTime;
+  public string SIDType;
+  public string InfestationType;
+  public string MeteorShowerTime;
 
   public Stats(int seed, string moonName, string weather, ulong[] allPlayerIDs)
   {
@@ -174,6 +174,9 @@ internal class Stats
     CollectedNoGift = 0;
     BottomLine = 0;
     BottomLineTrue = 0;
+    SIDType = "";
+    InfestationType = "";
+    MeteorShowerTime = "";
 
     foreach (ulong playerID in allPlayerIDs)
       Players[playerID] = new();

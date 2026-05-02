@@ -26,7 +26,7 @@ internal class ItemEventTracker
       return;
     }
 
-    bool is_sid = true;
+    bool isSid = true;
     foreach (NetworkObjectReference netObjRef in spawnedScrap)
     {
       netObjRef.TryGet(out var netObj);
@@ -39,7 +39,7 @@ internal class ItemEventTracker
 
       if (component.itemProperties.name != first.itemProperties.name)
       {
-        is_sid = false;
+        isSid = false;
         break;
       }
     }
@@ -58,9 +58,11 @@ internal class ItemEventTracker
     StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
     HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
 
-    StatsTracker.DayStats?.SIDType = is_sid ? first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText : "";
     StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
-    StatsTracker.DayStats?.InfestationType = __instance.enemyRushIndex != -1 ? __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name : "";
+    if (isSid)
+      StatsTracker.DayStats?.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
+    if (__instance.enemyRushIndex != -1)
+      StatsTracker.DayStats?.InfestationType = __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name;
   }
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
