@@ -9,11 +9,11 @@ namespace StatsTracker.Patches;
 [HarmonyPatch]
 internal class ItemEventTracker
 {
-  public static bool AppSpawnedThisDay = false;
+  private static bool appSpawnedThisDay = false;
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
   [HarmonyPrefix]
-  private static void TrackItemsAndDayEvents(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
+  private static void TrackSpawnedItemsAndDayEvents(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
   {
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
@@ -48,12 +48,12 @@ internal class ItemEventTracker
     foreach (int scrapValue in allScrapValue)
       totalStartScrapValue += scrapValue;
 
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (AppSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
 
-    StatsTracker.DayStats?.AppSpawned = AppSpawnedThisDay;
+    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay;
     StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
-    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue + (AppSpawnedThisDay ? 80 : 0);
-    AppSpawnedThisDay = false;
+    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue + (appSpawnedThisDay ? 80 : 0);
+    appSpawnedThisDay = false;
 
     StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
     HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
@@ -87,6 +87,36 @@ internal class ItemEventTracker
   [HarmonyPostfix]
   private static void CountApp(LungProp __instance)
   {
-    AppSpawnedThisDay = true;
+    appSpawnedThisDay = true;
+  }
+
+  // Prob gotta scrap all this in favor of an actual object tracker to make it easier to know all the edge cases cuz this solution lowk sucks
+  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.CollectNewScrapForThisRound))]
+  [HarmonyPrefix]
+  private static void TrackCollectedItem(RoundManager __instance, GrabbableObject scrapObject)
+  {
+    StatsTracker.DayStats?.CollectedNoExtra += scrapObject.scrapValue;
+    StatsTracker.DayStats?.TotalCollected += (scrapObject is GiftBoxItem) ? ((GiftBoxItem)scrapObject).objectInPresentValue : scrapObject.scrapValue;
+  }
+
+  [HarmonyPatch(typeof(GiftBoxItem), nameof(GiftBoxItem.InitializeAfterPositioning))]
+  [HarmonyPostfix]
+  private static void TrackTrueBottomLineFromGiftBox(GiftBoxItem __instance)
+  {
+    StatsTracker.DayStats?.BottomLineTrue += __instance.objectInPresentValue - __instance.scrapValue;
+  }
+
+  [HarmonyPatch(typeof(GiftBoxItem), nameof(GiftBoxItem.OpenGiftBoxClientRpc))]
+  [HarmonyPrefix]
+  private static void TrackOpenGiftBox(GiftBoxItem __instance, int presentValue)
+  {
+    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+      return;
+    
+    if (__instance.isInShipRoom)
+      return;
+
+    StatsTracker.DayStats?.CollectedNoExtra -= presentValue;
+    StatsTracker.DayStats?.TotalCollected -= presentValue;
   }
 }

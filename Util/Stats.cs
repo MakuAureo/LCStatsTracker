@@ -147,8 +147,8 @@ internal class Stats
   public int ShotgunsCollected;
   public int KnivesCollected;
   
-  public int CollectedNoGift;
-  public int ExtraGiftValue;
+  public int CollectedNoExtra;
+  public int TotalCollected;
   public int BottomLine;
   public int BottomLineTrue;
   
@@ -171,7 +171,7 @@ internal class Stats
     Seed = seed;
     ShotgunsCollected = 0;
     KnivesCollected = 0;
-    CollectedNoGift = 0;
+    CollectedNoExtra = 0;
     BottomLine = 0;
     BottomLineTrue = 0;
     SIDType = "";
