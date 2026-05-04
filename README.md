@@ -19,7 +19,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     },
     "DungeonInfo":
     {
-        "ItemCount":21,
+        "ItemCount":20,
         "Interior":"Mineshaft"
     },
     "HazardInfo":
@@ -142,7 +142,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     "CollectedTotal":806,
     "BottomLine":760,
     "BottomLineTrue":1428,
-    "AppSpawned":true,
+    "AppSpawned":false,
     "IndoorFog":false,
     "SIDType":"",
     "InfestationType":"",
