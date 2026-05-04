@@ -14,6 +14,8 @@ internal class ItemAndEventTracker
   private static bool appSpawnedThisDay = false;
   private static HashSet<NetworkObjectReference> knivesSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> shotgunsSpawnedThisDay = new();
+  private static HashSet<NetworkObjectReference> hivesSpawnedThisDay = new();
+  private static HashSet<NetworkObjectReference> eggsSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = new();
   private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = new();
   private static HashSet<Vector3> butlerPopPositionsToTrack = new();
@@ -27,6 +29,8 @@ internal class ItemAndEventTracker
 
     knivesSpawnedThisDay.Clear();
     shotgunsSpawnedThisDay.Clear();
+    hivesSpawnedThisDay.Clear();
+    eggsSpawnedThisDay.Clear();
     objectsNaturallySpawnedThisDay.Clear();
     valueFromGiftSpawner.Clear();
     butlerPopPositionsToTrack.Clear();
@@ -132,6 +136,27 @@ internal class ItemAndEventTracker
     StatsTracker.DayStats?.BottomLineTrue += __instance.objectInPresentValue - __instance.scrapValue;
   }
 
+  [HarmonyPatch(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc))]
+  [HarmonyPrefix]
+  private static void TrackHiveItem(RedLocustBees __instance, NetworkObjectReference hiveObject)
+  {
+    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+      return;
+    
+    hivesSpawnedThisDay.Add(hiveObject);
+  }
+
+  [HarmonyPatch(typeof(GiantKiwiAI), nameof(GiantKiwiAI.SpawnEggsClientRpc))]
+  [HarmonyPrefix]
+  private static void TrackEggItems(GiantKiwiAI __instance, NetworkObjectReference[] eggNetworkReferences)
+  {
+    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+      return;
+
+    foreach (NetworkObjectReference eggNetRef in eggNetworkReferences)
+      eggsSpawnedThisDay.Add(eggNetRef);
+  }
+
   [HarmonyPatch(typeof(NutcrackerEnemyAI), nameof(NutcrackerEnemyAI.InitializeNutcrackerValuesClientRpc))]
   [HarmonyPrefix]
   private static void TrackShogtun(NutcrackerEnemyAI __instance, NetworkObjectReference gunObject)
@@ -193,6 +218,10 @@ internal class ItemAndEventTracker
         StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
         StatsTracker.DayStats?.KnivesCollected += 1;
       }
+      else if (hivesSpawnedThisDay.Contains(gObject.NetworkObject) || eggsSpawnedThisDay.Contains(gObject.NetworkObject))
+      {
+        StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
+      }
     }
     else
     {
@@ -215,6 +244,10 @@ internal class ItemAndEventTracker
       {
         StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
         StatsTracker.DayStats?.KnivesCollected -= 1;
+      }
+      else if (hivesSpawnedThisDay.Contains(gObject.NetworkObject) || eggsSpawnedThisDay.Contains(gObject.NetworkObject))
+      {
+        StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
       }
     }
   }
