@@ -6,6 +6,8 @@ namespace StatsTracker.Patches;
 [HarmonyPatch]
 internal class SpawnTracker
 {
+  const int knifeValue = 35;
+  
   [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.Start))]
   [HarmonyPostfix]
   private static void TrackSpawn(EnemyAI __instance)
@@ -39,5 +41,22 @@ internal class SpawnTracker
     StatsTracker.DayStats?.BirdInfo.AddEggValue(eggScrapValues);
     foreach (int eggValue in eggScrapValues)
       StatsTracker.DayStats?.BottomLineTrue += eggValue;
+  }
+
+  [HarmonyPatch(typeof(NutcrackerEnemyAI), nameof(NutcrackerEnemyAI.InitializeNutcrackerValuesClientRpc))]
+  [HarmonyPrefix]
+  private static void TrackNutcrackerSpawn(NutcrackerEnemyAI __instance, int randomSeed, NetworkObjectReference gunObject)
+  {
+    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+      return;
+
+    StatsTracker.DayStats?.BottomLineTrue += __instance.gun.scrapValue;
+  }
+
+  [HarmonyPatch(typeof(ButlerEnemyAI), nameof(ButlerEnemyAI.Start))]
+  [HarmonyPostfix]
+  private static void TrackButlerSpawn(ButlerEnemyAI __instance)
+  {
+    StatsTracker.DayStats?.BottomLineTrue += knifeValue;
   }
 }
