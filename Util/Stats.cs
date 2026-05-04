@@ -153,6 +153,8 @@ internal class Stats
   public int CollectedTotal;
   public int BottomLine;
   public int BottomLineTrue;
+
+  public int ValueSold;
   
   public bool AppSpawned;
   public bool IndoorFog;
@@ -174,8 +176,10 @@ internal class Stats
     ShotgunsCollected = 0;
     KnivesCollected = 0;
     CollectedNoExtra = 0;
+    CollectedTotal = 0;
     BottomLine = 0;
     BottomLineTrue = 0;
+    ValueSold = 0;
     SIDType = "";
     InfestationType = "";
     MeteorShowerTime = "";
