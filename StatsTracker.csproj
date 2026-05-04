@@ -42,4 +42,15 @@
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="HQoL72" Publicize="true">
+      <HintPath>../ExtraDep/OreoM.HQoL.72.dll</HintPath>
+      <Aliases>HQoL72</Aliases>
+    </Reference>
+    <Reference Include="HQoL73" Publicize="true">
+      <HintPath>../ExtraDep/OreoM.HQoL.73.dll</HintPath>
+      <Aliases>HQoL73</Aliases>
+    </Reference>
+  </ItemGroup>
 </Project>

@@ -10,8 +10,6 @@ namespace StatsTracker;
 [BepInDependency("OreoM.HQoL.73", BepInDependency.DependencyFlags.SoftDependency)]
 public class StatsTracker : BaseUnityPlugin
 {
-  internal static bool isHQoLLoaded;
-
   public static StatsTracker Instance { get; private set; } = null!;
   internal new static ManualLogSource Logger { get; private set; } = null!;
   internal static Harmony? Harmony { get; set; }
@@ -25,8 +23,9 @@ public class StatsTracker : BaseUnityPlugin
     Logger = base.Logger;
     Instance = this;
 
-    isHQoLLoaded = Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73");
     Patch();
+    if (Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73"))
+      Harmony?.PatchAll(typeof(Patches.HQoLTracker));
     LocalServer.Start();
 
     Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
