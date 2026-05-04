@@ -10,34 +10,142 @@ The local server is hosted on port 2145, it uses SSE and can be queried at any t
 Just HTTP request it and wait until the day is over to get your stats.
 
 # Currently Tracked Stats
-
-- Seed Number
-- Item Info:
-  - Collected
-  - Available
-  - True Available (Available + items that don't add to it)
-- Moon Info:
-    - Name
-    - Weather
-    - Interior type
-- Events:
-    - Single Item Day type
-    - Infestation type
-    - Indoor Fog
-    - Meteor Shower
-- Missed Items:
-    - Type
-    - Value
-    - Position
-- Spawns:
-    - Type
-    - Time
-- Player:
-    - Alive?
-    - Time of death
-    - Cause of death
-- Special Items:
-    - Bee Hives
-    - Shotguns
-    - Knifes
-    - Eggs
+```
+{
+    "MoonInfo":
+    {   
+        "Name":"220 Assurance",
+        "Weather":"Mild"
+    },
+    "DungeonInfo":
+    {
+        "ItemCount":21,
+        "Interior":"Mineshaft"
+    },
+    "HazardInfo":
+    {
+        "TurretCount":2,
+        "LandmineCount":1,
+        "SpiketrapCount":0
+    },
+    "BeeInfo":
+    {
+        "Values":
+        [
+            70,
+            101,
+            101
+        ]
+    },
+    "BirdInfo":
+    {
+        "EggValues":
+        [
+            71,
+            119,
+            94
+        ]
+    },
+    "MissedItems":
+    [
+        {
+            "Value":29,
+            "ItemType":"Stop sign",
+            "DespawnPosition":
+            [
+                -21.3,
+                -225.6,
+                51.0
+            ],
+            "CollectedOnPreviousDay":false
+        },
+        {
+            "Value":38,
+            "ItemType":"Large axle",
+            "DespawnPosition":
+            [
+                -20.3,
+                -218.9,
+                86.2
+            ],
+            "CollectedOnPreviousDay":false
+        },
+        ...
+    ],
+    "IndoorSpawns":
+    [
+        {
+            "Enemy":"Bunker Spider",
+            "SpawnTime":"7:40 AM"
+        },
+        {
+            "Enemy":"Maneater",
+            "SpawnTime":"7:40 AM"
+        },
+        {
+            "Enemy":"Centipede",
+            "SpawnTime":"11:02 AM"
+        },
+        ...
+    ],
+    "DayTimeSpawns":
+    [
+        {
+            "Enemy":"Red Locust Bees",
+            "SpawnTime":"7:40 AM"
+        },
+        {
+            "Enemy":"GiantKiwi",
+            "SpawnTime":"7:40 AM"
+        },
+        {
+            "Enemy":"Red Locust Bees",
+            "SpawnTime":"7:40 AM"
+        },
+        {
+            "Enemy":"Red Locust Bees",
+            "SpawnTime":"7:40 AM"
+        }
+    ],
+    "NightTimeSpawns":
+    [
+        {
+            "Enemy":"Earth Leviathan",
+            "SpawnTime":"7:00 PM"},
+        {
+            "Enemy":"Earth Leviathan",
+            "SpawnTime":"7:00 PM"
+        },
+        {
+            "Enemy":"Baboon hawk",
+            "SpawnTime":"7:00 PM"
+        },
+        {
+            "Enemy":"Baboon hawk",
+            "SpawnTime":"7:00 PM"
+        }
+    ],
+    "Players":
+    {
+        "76561198980273231":
+        {
+            "Alive":true,
+            "Disconnected":false,
+            "TimeOfDeath":"",
+            "CauseOfDeath":""
+        }
+    },
+    "Seed":29003587,
+    "ShotgunsCollected":1,
+    "KnivesCollected":0,
+    "CollectedNoExtra":291,
+    "CollectedTotal":806,
+    "BottomLine":760,
+    "BottomLineTrue":1428,
+    "AppSpawned":true,
+    "IndoorFog":false,
+    "SIDType":"",
+    "InfestationType":"",
+    "MeteorShowerTime":""
+}
+```
