@@ -66,12 +66,14 @@ internal class MissingItemInfo
   public int Value;
   public string ItemType;
   public double[] DespawnPosition;
+  public bool CollectedOnPreviousDay;
 
-  public MissingItemInfo(string Name, int Value, Vector3 DespawnPosition)
+  public MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay)
   {
     this.ItemType = Name;
     this.Value = Value;
     this.DespawnPosition = [ Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1) ];
+    this.CollectedOnPreviousDay = CollectedOnPreviousDay;
   }
 }
 
@@ -148,7 +150,7 @@ internal class Stats
   public int KnivesCollected;
   
   public int CollectedNoExtra;
-  public int TotalCollected;
+  public int CollectedTotal;
   public int BottomLine;
   public int BottomLineTrue;
   

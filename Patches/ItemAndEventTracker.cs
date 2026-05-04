@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,6 +12,8 @@ namespace StatsTracker.Patches;
 internal class ItemEventTracker
 {
   private static bool appSpawnedThisDay = false;
+  private static HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = null!;
+  private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = null!;
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
   [HarmonyPrefix]
@@ -44,16 +48,17 @@ internal class ItemEventTracker
       }
     }
 
+    objectsNaturallySpawnedThisDay = new(spawnedScrap);
     int totalStartScrapValue = 0;
     foreach (int scrapValue in allScrapValue)
       totalStartScrapValue += scrapValue;
 
     StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
-
     StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay;
-    StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
-    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue + (appSpawnedThisDay ? 80 : 0);
     appSpawnedThisDay = false;
+
+    StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
+    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
 
     StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
     HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
@@ -79,7 +84,7 @@ internal class ItemEventTracker
 
     StatsTracker.DayStats?.MissedItems = missedObjs
       .Select<GrabbableObject, Util.MissingItemInfo>
-      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position))
+      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position, obj.scrapPersistedThroughRounds))
       .ToList();
   }
 
@@ -87,36 +92,88 @@ internal class ItemEventTracker
   [HarmonyPostfix]
   private static void CountApp(LungProp __instance)
   {
-    appSpawnedThisDay = true;
-  }
-
-  // Prob gotta scrap all this in favor of an actual object tracker to make it easier to know all the edge cases cuz this solution lowk sucks
-  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.CollectNewScrapForThisRound))]
-  [HarmonyPrefix]
-  private static void TrackCollectedItem(RoundManager __instance, GrabbableObject scrapObject)
-  {
-    StatsTracker.DayStats?.CollectedNoExtra += scrapObject.scrapValue;
-    StatsTracker.DayStats?.TotalCollected += (scrapObject is GiftBoxItem) ? ((GiftBoxItem)scrapObject).objectInPresentValue : scrapObject.scrapValue;
+    appSpawnedThisDay = true; 
+    StatsTracker.DayStats?.BottomLineTrue += __instance.scrapValue;
   }
 
   [HarmonyPatch(typeof(GiftBoxItem), nameof(GiftBoxItem.InitializeAfterPositioning))]
   [HarmonyPostfix]
-  private static void TrackTrueBottomLineFromGiftBox(GiftBoxItem __instance)
+  private static void TrackTrueValueFromGiftBox(GiftBoxItem __instance)
   {
     StatsTracker.DayStats?.BottomLineTrue += __instance.objectInPresentValue - __instance.scrapValue;
   }
 
+  [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetItemInElevator))]
+  [HarmonyPrefix]
+  private static void TrackItemWhenDropped(PlayerControllerB __instance, bool droppedInShipRoom, GrabbableObject gObject)
+  {
+    // If the item is spawned from a gift box it won't be spawned yet (on server)
+    if (!gObject.IsSpawned)
+      return;
+
+    if (gObject.isInShipRoom == droppedInShipRoom)
+      return;
+
+    if (!gObject.scrapPersistedThroughRounds)
+    {
+      if (droppedInShipRoom)
+      {
+        if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
+        {
+          StatsTracker.DayStats?.CollectedNoExtra += gObject.scrapValue;
+          StatsTracker.DayStats?.CollectedTotal += gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
+        }
+        else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
+        {
+          StatsTracker.DayStats?.CollectedNoExtra += parentGiftValue;
+          StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
+        }
+      }
+      else
+      {
+        if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
+        {
+          StatsTracker.DayStats?.CollectedNoExtra -= gObject.scrapValue;
+          StatsTracker.DayStats?.CollectedTotal -= gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
+        }
+        else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
+        {
+          StatsTracker.DayStats?.CollectedNoExtra -= parentGiftValue;
+          StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
+        }
+      }
+    }
+  }
+
   [HarmonyPatch(typeof(GiftBoxItem), nameof(GiftBoxItem.OpenGiftBoxClientRpc))]
   [HarmonyPrefix]
-  private static void TrackOpenGiftBox(GiftBoxItem __instance, int presentValue)
+  private static void AddNewlySpawnedGiftItemToItemTracker(GiftBoxItem __instance, NetworkObjectReference netObjectRef)
   {
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
-    
-    if (__instance.isInShipRoom)
-      return;
 
-    StatsTracker.DayStats?.CollectedNoExtra -= presentValue;
-    StatsTracker.DayStats?.TotalCollected -= presentValue;
+    // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
+    StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, __instance.scrapValue));
+  }
+
+  private static IEnumerator WaitForGiftItemToFullySpawnBeforeTracking(NetworkObjectReference netObjRef, int giftScrapValue)
+  {
+    NetworkObject? netObject = null;
+		float startTime = Time.realtimeSinceStartup;
+		while (Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject))
+		{
+			yield return new WaitForSeconds(0.03f);
+		}
+		if (netObject == null)
+		{
+			Debug.Log("Gift box: No network object found");
+			yield break;
+		}
+
+    // Make sure the items were already set to Elevator before tracking (this isn't guaranteed to wait for long enough, but like yk)
+    yield return new WaitForSeconds(0.3f);
+
+    objectsNaturallySpawnedThisDay.Add(netObjRef);
+    valueFromGiftSpawner[netObjRef] = giftScrapValue;
   }
 }
