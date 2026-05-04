@@ -20,13 +20,14 @@ internal class ItemAndEventTracker
   private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = new();
   private static HashSet<Vector3> butlerPopPositionsToTrack = new();
 
-  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc))]
+  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc))]
   [HarmonyPrefix]
   private static void ResetTrackerWhenStartingNewDay(RoundManager __instance)
   {
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
 
+    appSpawnedThisDay = false;
     knivesSpawnedThisDay.Clear();
     shotgunsSpawnedThisDay.Clear();
     hivesSpawnedThisDay.Clear();
@@ -77,7 +78,6 @@ internal class ItemAndEventTracker
 
     StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
     StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay;
-    appSpawnedThisDay = false;
 
     StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
     StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
