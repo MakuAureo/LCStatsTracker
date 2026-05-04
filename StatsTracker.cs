@@ -1,53 +1,59 @@
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 
 namespace StatsTracker;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency("OreoM.HQoL.72", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("OreoM.HQoL.73", BepInDependency.DependencyFlags.SoftDependency)]
 public class StatsTracker : BaseUnityPlugin
 {
-    public static StatsTracker Instance { get; private set; } = null!;
-    internal new static ManualLogSource Logger { get; private set; } = null!;
-    internal static Harmony? Harmony { get; set; }
+  internal static bool isHQoLLoaded;
 
-    internal static Util.Stats? DayStats;
-    internal static Util.HttpSSE LocalServer = new();
-    internal static string[] InteriorNames = { "Facility", "Mansion", "UnusedFacility", "Facility", "Mineshaft" };
+  public static StatsTracker Instance { get; private set; } = null!;
+  internal new static ManualLogSource Logger { get; private set; } = null!;
+  internal static Harmony? Harmony { get; set; }
 
-    private void Awake()
-    {
-        Logger = base.Logger;
-        Instance = this;
+  internal static Util.Stats? DayStats;
+  internal static Util.HttpSSE LocalServer = new();
+  internal static string[] VanillaInteriorNames = { "Facility", "Mansion", "UnusedFacility", "Facility3Exit", "Mineshaft" };
 
-        Patch();
-        LocalServer.Start();
-        
-        Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
-    }
+  private void Awake()
+  {
+    Logger = base.Logger;
+    Instance = this;
 
-    internal static void Patch()
-    {
-        Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
+    isHQoLLoaded = Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73");
+    Patch();
+    LocalServer.Start();
 
-        Logger.LogDebug("Patching...");
+    Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
+  }
 
-        Harmony.PatchAll();
+  internal static void Patch()
+  {
+    Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
 
-        Logger.LogDebug("Finished patching!");
-    }
+    Logger.LogDebug("Patching...");
 
-    internal static void Unpatch()
-    {
-        Logger.LogDebug("Unpatching...");
+    Harmony.PatchAll();
 
-        Harmony?.UnpatchSelf();
+    Logger.LogDebug("Finished patching!");
+  }
 
-        Logger.LogDebug("Finished unpatching!");
-    }
+  internal static void Unpatch()
+  {
+    Logger.LogDebug("Unpatching...");
 
-    internal static string GetCurrentTimeString()
-    {
-      return HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false);
-    }
+    Harmony?.UnpatchSelf();
+
+    Logger.LogDebug("Finished unpatching!");
+  }
+
+  internal static string GetCurrentTimeString()
+  {
+    return HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false);
+  }
 }

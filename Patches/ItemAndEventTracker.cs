@@ -76,7 +76,7 @@ internal class ItemAndEventTracker
     foreach (int scrapValue in allScrapValue)
       totalStartScrapValue += scrapValue;
 
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay ? 1 : 0), StatsTracker.InteriorNames[__instance.currentDungeonType]);
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay ? 1 : 0), StatsTracker.VanillaInteriorNames[__instance.currentDungeonType]);
     StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay;
 
     StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
