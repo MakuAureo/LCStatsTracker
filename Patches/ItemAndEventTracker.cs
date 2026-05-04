@@ -49,6 +49,7 @@ internal class ItemEventTracker
     }
 
     objectsNaturallySpawnedThisDay = new(spawnedScrap);
+    valueFromGiftSpawner = new();
     int totalStartScrapValue = 0;
     foreach (int scrapValue in allScrapValue)
       totalStartScrapValue += scrapValue;
