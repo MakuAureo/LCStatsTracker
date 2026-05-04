@@ -73,5 +73,8 @@ public class HttpSSE
     response.OutputStream.Write(buffer, 0, buffer.Length);
     response.OutputStream.Flush();
     response.Close();
+
+    // One request per day
+    Reset();
   }
 }
