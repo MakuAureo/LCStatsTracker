@@ -94,13 +94,13 @@ internal class ItemAndEventTracker
   {
     VehicleController cruiser = Object.FindAnyObjectByType<VehicleController>();
 
-    List<GrabbableObject> missedObjs = new(Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None));
-    missedObjs.RemoveAll(obj => 
+    GrabbableObject[] rawList = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
+    List<GrabbableObject> missedObjs = new(rawList);
+    missedObjs.RemoveAll(obj =>
         !obj.itemProperties.isScrap ||
         obj.isInShipRoom ||
         cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent<VehicleController>() == cruiser && cruiser.magnetedToShip);
 
-    StatsTracker.Logger.LogInfo($"Missed item list size: {missedObjs.Count}");
     StatsTracker.DayStats?.MissedItems = missedObjs
       .Select<GrabbableObject, Util.MissingItemInfo>
       (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position, obj.scrapPersistedThroughRounds))
