@@ -110,37 +110,40 @@ internal class ItemEventTracker
     // If the item is spawned from a gift box it won't be spawned yet (on server)
     if (!gObject.IsSpawned)
       return;
+  
+    if (StartOfRound.Instance.inShipPhase)
+      return;
 
     if (gObject.isInShipRoom == droppedInShipRoom)
       return;
 
-    if (!gObject.scrapPersistedThroughRounds)
+    if (gObject.scrapPersistedThroughRounds)
+      return;
+
+    if (droppedInShipRoom)
     {
-      if (droppedInShipRoom)
+      if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
       {
-        if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
-        {
-          StatsTracker.DayStats?.CollectedNoExtra += gObject.scrapValue;
-          StatsTracker.DayStats?.CollectedTotal += gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
-        }
-        else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
-        {
-          StatsTracker.DayStats?.CollectedNoExtra += parentGiftValue;
-          StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
-        }
+        StatsTracker.DayStats?.CollectedNoExtra += gObject.scrapValue;
+        StatsTracker.DayStats?.CollectedTotal += gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
       }
-      else
+      else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
       {
-        if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
-        {
-          StatsTracker.DayStats?.CollectedNoExtra -= gObject.scrapValue;
-          StatsTracker.DayStats?.CollectedTotal -= gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
-        }
-        else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
-        {
-          StatsTracker.DayStats?.CollectedNoExtra -= parentGiftValue;
-          StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
-        }
+        StatsTracker.DayStats?.CollectedNoExtra += parentGiftValue;
+        StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
+      }
+    }
+    else
+    {
+      if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
+      {
+        StatsTracker.DayStats?.CollectedNoExtra -= gObject.scrapValue;
+        StatsTracker.DayStats?.CollectedTotal -= gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
+      }
+      else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
+      {
+        StatsTracker.DayStats?.CollectedNoExtra -= parentGiftValue;
+        StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
       }
     }
   }
@@ -152,13 +155,16 @@ internal class ItemEventTracker
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
 
+    if (StartOfRound.Instance.inShipPhase)
+      return;
+
     // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
     StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, __instance.scrapValue));
   }
 
   private static IEnumerator WaitForGiftItemToFullySpawnBeforeTracking(NetworkObjectReference netObjRef, int giftScrapValue)
   {
-    NetworkObject? netObject = null;
+    NetworkObject netObject = null!;
 		float startTime = Time.realtimeSinceStartup;
 		while (Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject))
 		{
@@ -166,14 +172,13 @@ internal class ItemEventTracker
 		}
 		if (netObject == null)
 		{
-			Debug.Log("Gift box: No network object found");
+			StatsTracker.Logger.LogWarning("No network object found in for giftbox");
 			yield break;
 		}
 
     // Make sure the items were already set to Elevator before tracking (this isn't guaranteed to wait for long enough, but like yk)
     yield return new WaitForSeconds(0.3f);
 
-    objectsNaturallySpawnedThisDay.Add(netObjRef);
     valueFromGiftSpawner[netObjRef] = giftScrapValue;
   }
 }
