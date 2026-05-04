@@ -6,6 +6,7 @@ This is meant to allow people to treat this data however they want.
 # Local server
 
 The local server is hosted on port 2145, it uses SSE and can be queried at any time but will only release the data after the current day ends.
+The data can only be queried once per day, once it is sent the server will wait for the next day to finish.
 
 Just HTTP request it and wait until the day is over to get your stats.
 
@@ -142,6 +143,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     "CollectedTotal":806,
     "BottomLine":760,
     "BottomLineTrue":1428,
+    "ValueSold":0,
     "AppSpawned":false,
     "IndoorFog":false,
     "SIDType":"",
