@@ -88,6 +88,13 @@ internal class ItemAndEventTracker
       StatsTracker.DayStats?.InfestationType = __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name;
   }
 
+  [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.SetBeginMeteorShowerClientRpc))]
+  [HarmonyPostfix]
+  private static void TrackMeteorShower(TimeOfDay __instance)
+  {
+    StatsTracker.DayStats?.MeteorShowerTime = StatsTracker.GetCurrentTimeString();
+  }
+
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
   [HarmonyPrefix]
   private static void TrackMissedItems(RoundManager __instance)
