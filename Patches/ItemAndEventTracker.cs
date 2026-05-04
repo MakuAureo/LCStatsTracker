@@ -89,9 +89,12 @@ internal class ItemAndEventTracker
   }
 
   [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.SetBeginMeteorShowerClientRpc))]
-  [HarmonyPostfix]
+  [HarmonyPrefix]
   private static void TrackMeteorShower(TimeOfDay __instance)
   {
+    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+      return;
+
     StatsTracker.DayStats?.MeteorShowerTime = StatsTracker.GetCurrentTimeString();
   }
 
