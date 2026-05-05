@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace StatsTracker.Patches;
 
@@ -23,8 +25,18 @@ internal class ServerEvents
 
   [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay))]
   [HarmonyPostfix]
-  private static void PublishDayStats()
+  private static void PublishDayStats(StartOfRound __instance)
   {
+    if (TimeOfDay.Instance.profitQuota - TimeOfDay.Instance.quotaFulfilled <= 0)
+      __instance.StartCoroutine(PublishDayStatsAfterQuotaRoll(TimeOfDay.Instance.profitQuota));
+    else
+      StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
+  }
+
+  private static IEnumerator PublishDayStatsAfterQuotaRoll(int prevQuota)
+  {
+    yield return new WaitUntil(() => TimeOfDay.Instance.profitQuota != prevQuota);
+    StatsTracker.DayStats?.NewQuota = TimeOfDay.Instance.profitQuota;
     StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
   }
 }

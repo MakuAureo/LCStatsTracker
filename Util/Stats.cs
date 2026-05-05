@@ -155,6 +155,7 @@ internal class Stats
   public int BottomLineTrue;
 
   public int ValueSold;
+  public int NewQuota;
   
   public bool AppSpawned;
   public bool IndoorFog;
@@ -180,6 +181,7 @@ internal class Stats
     BottomLine = 0;
     BottomLineTrue = 0;
     ValueSold = 0;
+    NewQuota = 0;
     SIDType = "";
     InfestationType = "";
     MeteorShowerTime = "";
