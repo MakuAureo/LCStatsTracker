@@ -11,11 +11,11 @@ namespace StatsTracker.Patches;
 [HarmonyPatch]
 internal class ItemAndEventTracker
 {
-  private static bool appSpawnedThisDay = false;
   private static HashSet<NetworkObjectReference> knivesSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> shotgunsSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> hivesSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> eggsSpawnedThisDay = new();
+  private static HashSet<NetworkObjectReference> appSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = new();
   private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = new();
   private static HashSet<Vector3> butlerPopPositionsToTrack = new();
@@ -27,7 +27,7 @@ internal class ItemAndEventTracker
     if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
       return;
 
-    appSpawnedThisDay = false;
+    appSpawnedThisDay.Clear();
     knivesSpawnedThisDay.Clear();
     shotgunsSpawnedThisDay.Clear();
     hivesSpawnedThisDay.Clear();
@@ -76,8 +76,8 @@ internal class ItemAndEventTracker
     foreach (int scrapValue in allScrapValue)
       totalStartScrapValue += scrapValue;
 
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay ? 1 : 0), StatsTracker.VanillaInteriorNames[__instance.currentDungeonType]);
-    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay;
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay.Count > 0 ? 1 : 0), StatsTracker.VanillaInteriorNames[__instance.currentDungeonType]);
+    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay.Count > 0;
 
     StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
     StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
@@ -125,7 +125,7 @@ internal class ItemAndEventTracker
   [HarmonyPostfix]
   private static void CountApp(LungProp __instance)
   {
-    appSpawnedThisDay = true; 
+    appSpawnedThisDay.Add(__instance.NetworkObject); 
     StatsTracker.DayStats?.BottomLineTrue += __instance.scrapValue;
   }
 
@@ -218,7 +218,7 @@ internal class ItemAndEventTracker
         StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
         StatsTracker.DayStats?.KnivesCollected += 1;
       }
-      else if (hivesSpawnedThisDay.Contains(gObject.NetworkObject) || eggsSpawnedThisDay.Contains(gObject.NetworkObject))
+      else if (hivesSpawnedThisDay.Contains(gObject.NetworkObject) || eggsSpawnedThisDay.Contains(gObject.NetworkObject) || appSpawnedThisDay.Contains(gObject.NetworkObject))
       {
         StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
       }
@@ -245,7 +245,7 @@ internal class ItemAndEventTracker
         StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
         StatsTracker.DayStats?.KnivesCollected -= 1;
       }
-      else if (hivesSpawnedThisDay.Contains(gObject.NetworkObject) || eggsSpawnedThisDay.Contains(gObject.NetworkObject))
+      else if (hivesSpawnedThisDay.Contains(gObject.NetworkObject) || eggsSpawnedThisDay.Contains(gObject.NetworkObject) || appSpawnedThisDay.Contains(gObject.NetworkObject))
       {
         StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
       }
