@@ -136,14 +136,6 @@ internal class Stats
   public BeeInfo BeeInfo;
   public KiwiBirdInfo BirdInfo;
   
-  public List<MissingItemInfo> MissedItems;
-  
-  public List<SpawnInfo> IndoorSpawns;
-  public List<SpawnInfo> DayTimeSpawns;
-  public List<SpawnInfo> NightTimeSpawns;
-  
-  public Dictionary<ulong, PlayerStats> Players;
-
   public int Seed;
 
   public int ShotgunsCollected;
@@ -159,9 +151,18 @@ internal class Stats
   
   public bool AppSpawned;
   public bool IndoorFog;
+  public string TakeOffTime;
   public string SIDType;
   public string InfestationType;
   public string MeteorShowerTime;
+
+  public List<SpawnInfo> IndoorSpawns;
+  public List<SpawnInfo> DayTimeSpawns;
+  public List<SpawnInfo> NightTimeSpawns;
+  
+  public Dictionary<ulong, PlayerStats> Players;
+  
+  public List<MissingItemInfo> MissedItems;
 
   public Stats(int seed, string moonName, string weather, ulong[] allPlayerIDs)
   {
@@ -182,6 +183,7 @@ internal class Stats
     BottomLineTrue = 0;
     ValueSold = 0;
     NewQuota = 0;
+    TakeOffTime = "";
     SIDType = "";
     InfestationType = "";
     MeteorShowerTime = "";
