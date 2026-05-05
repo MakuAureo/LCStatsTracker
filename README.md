@@ -57,6 +57,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     "ValueSold":0,
     "AppSpawned":false,
     "IndoorFog":false,
+    "TakeOffTime":"8:30 PM"
     "SIDType":"",
     "InfestationType":"",
     "MeteorShowerTime":"",
