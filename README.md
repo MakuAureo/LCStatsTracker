@@ -47,32 +47,29 @@ Just HTTP request it and wait until the day is over to get your stats.
             94
         ]
     },
-    "MissedItems":
-    [
+    "Seed":29003587,
+    "ShotgunsCollected":1,
+    "KnivesCollected":0,
+    "CollectedNoExtra":291,
+    "CollectedTotal":806,
+    "BottomLine":760,
+    "BottomLineTrue":1428,
+    "ValueSold":0,
+    "AppSpawned":false,
+    "IndoorFog":false,
+    "SIDType":"",
+    "InfestationType":"",
+    "MeteorShowerTime":"",
+    "Players":
+    {
+        "76561198980273231":
         {
-            "Value":29,
-            "ItemType":"Stop sign",
-            "DespawnPosition":
-            [
-                -21.3,
-                -225.6,
-                51.0
-            ],
-            "CollectedOnPreviousDay":false
-        },
-        {
-            "Value":38,
-            "ItemType":"Large axle",
-            "DespawnPosition":
-            [
-                -20.3,
-                -218.9,
-                86.2
-            ],
-            "CollectedOnPreviousDay":false
-        },
-        ...
-    ],
+            "Alive":true,
+            "Disconnected":false,
+            "TimeOfDeath":"",
+            "CauseOfDeath":""
+        }
+    },
     "IndoorSpawns":
     [
         {
@@ -125,29 +122,32 @@ Just HTTP request it and wait until the day is over to get your stats.
             "Enemy":"Baboon hawk",
             "SpawnTime":"7:00 PM"
         }
-    ],
-    "Players":
-    {
-        "76561198980273231":
+    ]
+    "MissedItems":
+    [
         {
-            "Alive":true,
-            "Disconnected":false,
-            "TimeOfDeath":"",
-            "CauseOfDeath":""
-        }
-    },
-    "Seed":29003587,
-    "ShotgunsCollected":1,
-    "KnivesCollected":0,
-    "CollectedNoExtra":291,
-    "CollectedTotal":806,
-    "BottomLine":760,
-    "BottomLineTrue":1428,
-    "ValueSold":0,
-    "AppSpawned":false,
-    "IndoorFog":false,
-    "SIDType":"",
-    "InfestationType":"",
-    "MeteorShowerTime":""
+            "Value":29,
+            "ItemType":"Stop sign",
+            "DespawnPosition":
+            [
+                -21.3,
+                -225.6,
+                51.0
+            ],
+            "CollectedOnPreviousDay":false
+        },
+        {
+            "Value":38,
+            "ItemType":"Large axle",
+            "DespawnPosition":
+            [
+                -20.3,
+                -218.9,
+                86.2
+            ],
+            "CollectedOnPreviousDay":false
+        },
+        ...
+    ],
 }
 ```

@@ -155,12 +155,12 @@ internal class Stats
   public string SIDType;
   public string InfestationType;
   public string MeteorShowerTime;
+  
+  public Dictionary<ulong, PlayerStats> Players;
 
   public List<SpawnInfo> IndoorSpawns;
   public List<SpawnInfo> DayTimeSpawns;
   public List<SpawnInfo> NightTimeSpawns;
-  
-  public Dictionary<ulong, PlayerStats> Players;
   
   public List<MissingItemInfo> MissedItems;
 
