@@ -15,7 +15,7 @@ internal class ServerEvents
   [HarmonyPrefix]
   private static void StartTrackingNewday(StartOfRound __instance)
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
     StatsTracker.DayStats = new(__instance.randomMapSeed, __instance.currentLevel.PlanetName,

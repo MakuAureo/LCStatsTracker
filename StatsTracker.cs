@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
+using UnityEngine;
 
 namespace StatsTracker;
 
@@ -16,7 +18,14 @@ public class StatsTracker : BaseUnityPlugin
 
   internal static Util.Stats? DayStats;
   internal static Util.HttpSSE LocalServer = new();
-  internal static string[] VanillaInteriorNames = { "Facility", "Mansion", "UnusedFacility", "Facility3Exit", "Mineshaft" };
+  internal static Dictionary<string, string> VanillaInteriorNames = new Dictionary<string,string>
+  { 
+    {"Level1Flow", "Facility"},
+    {"Level2Flow", "Mansion"},
+    {"Level1FlowExtraLarge", "UnusedFacility"},
+    {"Level1Flow3Exits", "Facility3Exit"},
+    {"Level3Flow", "Mineshaft"} 
+  };
 
   private void Awake()
   {
@@ -53,6 +62,40 @@ public class StatsTracker : BaseUnityPlugin
 
   internal static string GetCurrentTimeString()
   {
-    return HUDManager.Instance.GetClockTimeFormatted(TimeOfDay.Instance.normalizedTimeOfDay, TimeOfDay.Instance.numberOfHours, false);
+    float timeNormalized = TimeOfDay.Instance.normalizedTimeOfDay;
+    float numberOfHours = TimeOfDay.Instance.numberOfHours;
+    bool createNewLine = false;
+    string newLine = "";
+    string amPM = "";
+
+    int num = (int)(timeNormalized * (60f * numberOfHours)) + 360;
+		int num2 = (int)Mathf.Floor(num / 60);
+		if (!createNewLine)
+		{
+			newLine = " ";
+		}
+		else
+		{
+			newLine = "\n";
+		}
+		amPM = newLine + "AM";
+		if (num2 >= 24)
+		{
+			return "12:00 " + newLine + " AM";
+		}
+		if (num2 < 12)
+		{
+			amPM = newLine + "AM";
+		}
+		else
+		{
+			amPM = newLine + "PM";
+		}
+		if (num2 > 12)
+		{
+			num2 %= 12;
+		}
+		int num3 = num % 60;
+		return $"{num2:00}:{num3:00}".TrimStart('0') + amPM;
   }
 }

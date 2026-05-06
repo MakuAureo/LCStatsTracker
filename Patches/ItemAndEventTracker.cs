@@ -1,16 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
+using Object = UnityEngine.Object;
 
 namespace StatsTracker.Patches;
 
 [HarmonyPatch]
 internal class ItemAndEventTracker
 {
+  private static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
+  private static readonly Type? VehicleControllerType = AccessTools.TypeByName(nameof(VehicleController));
+
   private static HashSet<NetworkObjectReference> knivesSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> shotgunsSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> hivesSpawnedThisDay = new();
@@ -24,7 +31,7 @@ internal class ItemAndEventTracker
   [HarmonyPrefix]
   private static void ResetTrackerWhenStartingNewDay(RoundManager __instance)
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
     appSpawnedThisDay.Clear();
@@ -39,9 +46,40 @@ internal class ItemAndEventTracker
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
   [HarmonyPrefix]
-  private static void TrackSpawnedItemsAndDayEvents(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
+  private static void TrackSpawnedItemsAndHazards(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+      return;
+
+    objectsNaturallySpawnedThisDay = new(spawnedScrap);
+
+    int totalStartScrapValue = 0;
+    foreach (int scrapValue in allScrapValue)
+      totalStartScrapValue += scrapValue;
+
+    string interiorNameIndirect = Traverse.Create(__instance)
+      .Field("dungeonGenerator")
+      .Property("Generator")
+      .Property("DungeonFlow")
+      .Property("name")
+      .GetValue<string>();
+
+    bool isVanillaInterior = StatsTracker.VanillaInteriorNames.TryGetValue(interiorNameIndirect, out string interiorName);
+    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay.Count > 0 ? 1 : 0), isVanillaInterior ? interiorName : interiorNameIndirect);
+    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay.Count > 0;
+
+    StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
+    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
+
+    StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
+    HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
+  }
+
+  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
+  [HarmonyPrefix]
+  private static void TrackSID(RoundManager __instance, NetworkObjectReference[] spawnedScrap)
+  {
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client) || GameNetworkManager.Instance.gameVersionNum < 60)
       return;
 
     spawnedScrap[0].TryGet(out var firstNetObj);
@@ -52,7 +90,6 @@ internal class ItemAndEventTracker
       return;
     }
 
-    bool isSid = true;
     foreach (NetworkObjectReference netObjRef in spawnedScrap)
     {
       netObjRef.TryGet(out var netObj);
@@ -65,55 +102,78 @@ internal class ItemAndEventTracker
 
       if (component.itemProperties.name != first.itemProperties.name)
       {
-        isSid = false;
-        break;
+        return;
       }
     }
 
-    objectsNaturallySpawnedThisDay = new(spawnedScrap);
-
-    int totalStartScrapValue = 0;
-    foreach (int scrapValue in allScrapValue)
-      totalStartScrapValue += scrapValue;
-
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay.Count > 0 ? 1 : 0), StatsTracker.VanillaInteriorNames[__instance.currentDungeonType]);
-    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay.Count > 0;
-
-    StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
-    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
-
-    StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
-    HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
-
-    StatsTracker.DayStats?.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
-    if (isSid)
-      StatsTracker.DayStats?.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
-    if (__instance.enemyRushIndex != -1)
-      StatsTracker.DayStats?.InfestationType = __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name;
+    StatsTracker.DayStats?.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
   }
 
-  [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.SetBeginMeteorShowerClientRpc))]
-  [HarmonyPrefix]
-  private static void TrackMeteorShower(TimeOfDay __instance)
+  [HarmonyPatch]
+  private static class TrackInfes
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
-      return;
-
-    StatsTracker.DayStats?.MeteorShowerTime = StatsTracker.GetCurrentTimeString();
+    private static PropertyInfo? enemyRushIndexInfo = null;
+    private static bool Prepare()
+    { 
+      enemyRushIndexInfo = AccessTools.Property(typeof(RoundManager), nameof(RoundManager.enemyRushIndex));
+      return enemyRushIndexInfo != null;
+    }
+    private static MethodBase TargetMethod() => AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
+    private static void Postfix(RoundManager __instance) 
+    {      
+      int enemyRushIndex = (int)enemyRushIndexInfo!.GetValue(__instance);
+      if (enemyRushIndex != -1)
+        StatsTracker.DayStats?.InfestationType = __instance.currentLevel.Enemies[enemyRushIndex].enemyType.name;
+    }
   }
 
+  [HarmonyPatch]
+  private static class TrackIndoorFog
+  {
+    private static PropertyInfo? indoorFogInfo = null;
+    private static bool Prepare()
+    {
+      indoorFogInfo = AccessTools.Property(typeof(RoundManager), nameof(RoundManager.indoorFog));
+      return indoorFogInfo != null;
+    }
+    private static MethodBase TargetMethod() => AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
+    private static void Postfix(RoundManager __instance) { StatsTracker.DayStats?.IndoorFog = ((LocalVolumetricFog)indoorFogInfo!.GetValue(__instance)).gameObject.activeSelf; }
+  }
+
+  [HarmonyPatch]
+  private static class TrackMeteorShower
+  {
+    private static MethodInfo? SetBeginMeteorShowerClientRpcInfo = null;
+    private static bool Prepare()
+    {
+      SetBeginMeteorShowerClientRpcInfo = AccessTools.Method(typeof(TimeOfDay), nameof(TimeOfDay.SetBeginMeteorShowerClientRpc));
+      return SetBeginMeteorShowerClientRpcInfo != null;
+    }
+    private static MethodBase TargetMethod() => SetBeginMeteorShowerClientRpcInfo!;
+    private static void Prefix(TimeOfDay __instance) 
+    { 
+      if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+        return;
+
+      StatsTracker.DayStats?.MeteorShowerTime = StatsTracker.GetCurrentTimeString();
+    }
+  }
+
+  // Gotta work on this still
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
   [HarmonyPrefix]
   private static void TrackMissedItems(RoundManager __instance)
   {
-    VehicleController cruiser = Object.FindAnyObjectByType<VehicleController>();
+    var cruiser = VehicleControllerType != null
+      ? Object.FindAnyObjectByType(VehicleControllerType)
+      : null;
 
     GrabbableObject[] rawList = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
     List<GrabbableObject> missedObjs = new(rawList);
     missedObjs.RemoveAll(obj =>
         !obj.itemProperties.isScrap ||
         obj.isInShipRoom ||
-        cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent<VehicleController>() == cruiser && cruiser.magnetedToShip);
+        cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent(VehicleControllerType) == cruiser && Traverse.Create(cruiser).Field(nameof(VehicleController.magnetedToShip)).GetValue<bool>());
 
     StatsTracker.DayStats?.MissedItems = missedObjs
       .Select<GrabbableObject, Util.MissingItemInfo>
@@ -129,63 +189,111 @@ internal class ItemAndEventTracker
     StatsTracker.DayStats?.BottomLineTrue += __instance.scrapValue;
   }
 
-  [HarmonyPatch(typeof(GiftBoxItem), nameof(GiftBoxItem.InitializeAfterPositioning))]
-  [HarmonyPostfix]
-  private static void TrackTrueValueFromGiftBox(GiftBoxItem __instance)
-  {
-    StatsTracker.DayStats?.BottomLineTrue += __instance.objectInPresentValue - __instance.scrapValue;
-  }
-
   [HarmonyPatch(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc))]
   [HarmonyPrefix]
   private static void TrackHiveItem(RedLocustBees __instance, NetworkObjectReference hiveObject)
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
-    
+
     hivesSpawnedThisDay.Add(hiveObject);
   }
 
-  [HarmonyPatch(typeof(GiantKiwiAI), nameof(GiantKiwiAI.SpawnEggsClientRpc))]
-  [HarmonyPrefix]
-  private static void TrackEggItems(GiantKiwiAI __instance, NetworkObjectReference[] eggNetworkReferences)
+  [HarmonyPatch]
+  private static class TrackEggItems
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
-      return;
-
-    foreach (NetworkObjectReference eggNetRef in eggNetworkReferences)
-      eggsSpawnedThisDay.Add(eggNetRef);
-  }
-
-  [HarmonyPatch(typeof(NutcrackerEnemyAI), nameof(NutcrackerEnemyAI.InitializeNutcrackerValuesClientRpc))]
-  [HarmonyPrefix]
-  private static void TrackShogtun(NutcrackerEnemyAI __instance, NetworkObjectReference gunObject)
-  {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
-      return;
-
-    shotgunsSpawnedThisDay.Add(gunObject);
-  }
-
-  [HarmonyPatch(typeof(ButlerEnemyAI), nameof(ButlerEnemyAI.KillEnemy))]
-  [HarmonyPrefix]
-  private static void TrackButlerPopPosition(ButlerEnemyAI __instance)
-  {
-    butlerPopPositionsToTrack.Add(__instance.transform.position);
-  }
-
-  [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.Start))]
-  [HarmonyPrefix]
-  private static void TrackKnife(GrabbableObject __instance)
-  {
-    if (__instance is not KnifeItem knife) 
-      return;
-
-    Vector3 pos = butlerPopPositionsToTrack.FirstOrDefault(p => Vector3.Distance(p + Vector3.up * 0.5f, knife.transform.position) < 0.1f);
-    if (pos != Vector3.zero)
+    private static Type? GiantKiwiAIType = null;
+    private static bool Prepare()
     {
-      knivesSpawnedThisDay.Add(__instance.NetworkObject);
-      butlerPopPositionsToTrack.Remove(pos);
+      GiantKiwiAIType = AccessTools.TypeByName(nameof(GiantKiwiAI));
+      return GiantKiwiAIType != null;
+    }
+    private static MethodBase TargetMethod() => AccessTools.Method(GiantKiwiAIType, nameof(GiantKiwiAI.SpawnEggsClientRpc));
+    private static void Prefix(object __instance, NetworkObjectReference[] eggNetworkReferences)
+    { 
+      GiantKiwiAI instance = (GiantKiwiAI)__instance;     
+
+      if ((GameNetworkManager.Instance.gameVersionNum > 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+        return;
+
+      foreach (NetworkObjectReference eggNetRef in eggNetworkReferences)
+        eggsSpawnedThisDay.Add(eggNetRef);
+    }
+  }
+
+  [HarmonyPatch]
+  private static class TrackTrueValueFromGiftBox
+  {
+    private static bool Prepare() => GiftBoxItemType != null;
+    private static MethodBase TargetMethod() => AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.InitializeAfterPositioning));
+    private static void Postfix(object __instance)
+    { 
+      GiftBoxItem instance = (GiftBoxItem)__instance;     
+      StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue - instance.scrapValue;
+    }
+  }
+
+  [HarmonyPatch]
+  private static class TrackShotgun
+  {
+    private static Type? NutcrackerEnemyAIType = null;
+    private static bool Prepare()
+    {
+      NutcrackerEnemyAIType = AccessTools.TypeByName(nameof(NutcrackerEnemyAI));
+      return NutcrackerEnemyAIType != null;
+    }
+    private static MethodBase TargetMethod() => AccessTools.Method(NutcrackerEnemyAIType, nameof(NutcrackerEnemyAI.InitializeNutcrackerValuesClientRpc));
+    private static void Prefix(object __instance, NetworkObjectReference gunObject)
+    {
+      NutcrackerEnemyAI instance = (NutcrackerEnemyAI)__instance;
+
+      if ((GameNetworkManager.Instance.gameVersionNum > 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+        return;
+
+      shotgunsSpawnedThisDay.Add(gunObject);
+    }
+  }
+
+  [HarmonyPatch]
+  private static class TrackButlerPopPosition
+  {
+    private static Type? ButlerEnemyAIType = null;
+    private static bool Prepare()
+    {
+      ButlerEnemyAIType = AccessTools.TypeByName(nameof(ButlerEnemyAI));
+      return ButlerEnemyAIType != null;
+    }
+    private static MethodBase TargetMethod() => AccessTools.Method(ButlerEnemyAIType, nameof(ButlerEnemyAI.KillEnemy));
+    private static void Prefix(object __instance)
+    {
+      ButlerEnemyAI instance = (ButlerEnemyAI)__instance;
+
+      butlerPopPositionsToTrack.Add(instance.transform.position);
+    }
+  }
+
+  [HarmonyPatch]
+  private static class TrackKnife
+  {
+    private static Type? KnifeItemInfo = null;
+    private static bool Prepare()
+    {
+      KnifeItemInfo = AccessTools.TypeByName(nameof(KnifeItem));
+      return KnifeItemInfo != null;
+    }
+    private static void Prefix(GrabbableObject __instance)
+    {
+      if (!(KnifeItemInfo!.IsInstanceOfType(__instance)))
+        return;
+
+      KnifeItem knife = (KnifeItem)__instance;
+
+      Vector3 pos = butlerPopPositionsToTrack.FirstOrDefault(p => Vector3.Distance(p + Vector3.up * 0.5f, knife.transform.position) < 0.1f);
+      if (pos != Vector3.zero)
+      {
+        knivesSpawnedThisDay.Add(__instance.NetworkObject);
+        butlerPopPositionsToTrack.Remove(pos);
+      }
     }
   }
 
@@ -201,7 +309,10 @@ internal class ItemAndEventTracker
       if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
       {
         StatsTracker.DayStats?.CollectedNoExtra += gObject.scrapValue;
-        StatsTracker.DayStats?.CollectedTotal += gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
+        StatsTracker.DayStats?.CollectedTotal += 
+          GiftBoxItemType?.IsInstanceOfType(gObject) == true ?
+          Traverse.Create(gObject).Property(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>()
+          : gObject.scrapValue;
       }
       else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
       {
@@ -228,7 +339,10 @@ internal class ItemAndEventTracker
       if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
       {
         StatsTracker.DayStats?.CollectedNoExtra -= gObject.scrapValue;
-        StatsTracker.DayStats?.CollectedTotal -= gObject is GiftBoxItem ? ((GiftBoxItem)gObject).objectInPresentValue : gObject.scrapValue;
+        StatsTracker.DayStats?.CollectedTotal -= 
+          GiftBoxItemType?.IsInstanceOfType(gObject) == true ?
+          Traverse.Create(gObject).Property(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>()
+          : gObject.scrapValue;
       }
       else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
       {
@@ -252,33 +366,38 @@ internal class ItemAndEventTracker
     }
   }
 
-  [HarmonyPatch(typeof(GiftBoxItem), nameof(GiftBoxItem.OpenGiftBoxClientRpc))]
-  [HarmonyPrefix]
-  private static void AddNewlySpawnedGiftItemToItemTracker(GiftBoxItem __instance, NetworkObjectReference netObjectRef)
+  [HarmonyPatch]
+  private static class AddNewlySpawnedGiftItemToItemTracker
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
-      return;
+    private static bool Prepare() => GiftBoxItemType != null;
+    private static MethodBase TargetMethod() => AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.OpenGiftBoxClientRpc));
+    private static void Prefix(object __instance, NetworkObjectReference netObjectRef)
+    { 
+      GiftBoxItem instance = (GiftBoxItem)__instance;     
+      if ((GameNetworkManager.Instance.gameVersionNum > 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+        return;
 
-    if (StartOfRound.Instance.inShipPhase)
-      return;
+      if (StartOfRound.Instance.inShipPhase)
+        return;
 
-    // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
-    StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, __instance.scrapValue));
+      // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
+      StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, instance.scrapValue));
+    }
   }
 
   private static IEnumerator WaitForGiftItemToFullySpawnBeforeTracking(NetworkObjectReference netObjRef, int giftScrapValue)
   {
     NetworkObject netObject = null!;
-		float startTime = Time.realtimeSinceStartup;
-		while (Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject))
-		{
-			yield return new WaitForSeconds(0.03f);
-		}
-		if (netObject == null)
-		{
-			StatsTracker.Logger.LogWarning("No network object found for giftbox");
-			yield break;
-		}
+    float startTime = Time.realtimeSinceStartup;
+    while (Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject))
+    {
+      yield return new WaitForSeconds(0.03f);
+    }
+    if (netObject == null)
+    {
+      StatsTracker.Logger.LogWarning("No network object found for giftbox");
+      yield break;
+    }
 
     // Make sure the items were already set to Elevator before tracking (this isn't guaranteed to wait for long enough, but like yk)
     yield return new WaitForSeconds(0.3f);

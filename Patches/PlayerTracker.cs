@@ -11,7 +11,7 @@ internal class PlayerTracker
   [HarmonyPrefix]
   private static void TrackDeath(PlayerControllerB __instance, int causeOfDeath)
   {
-    if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
     StatsTracker.DayStats?.Players[__instance.playerSteamId]?
