@@ -44,78 +44,86 @@ internal class ItemAndEventTracker
     butlerPopPositionsToTrack.Clear();
   }
 
-  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
-  [HarmonyPrefix]
-  private static void TrackSpawnedItemsAndHazards(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
+  [HarmonyPatch]
+  private static class TrackSpawnedItemsAndHazards
   {
-    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
-      return;
+    private static bool Prepare() => true;
+    private static MethodBase TargetMethod() => AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
+    private static void Prefix(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue) 
+    {      
+      if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+        return;
 
-    objectsNaturallySpawnedThisDay = new(spawnedScrap);
+      objectsNaturallySpawnedThisDay = new(spawnedScrap);
 
-    int totalStartScrapValue = 0;
-    foreach (int scrapValue in allScrapValue)
-      totalStartScrapValue += scrapValue;
+      int totalStartScrapValue = 0;
+      foreach (int scrapValue in allScrapValue)
+        totalStartScrapValue += scrapValue;
 
-    string interiorNameIndirect = Traverse.Create(__instance)
-      .Field("dungeonGenerator")
-      .Property("Generator")
-      .Property("DungeonFlow")
-      .Property("name")
-      .GetValue<string>();
+      string interiorNameIndirect = Traverse.Create(__instance)
+        .Field("dungeonGenerator")
+        .Field("Generator")
+        .Field("DungeonFlow")
+        .Property("name")
+        .GetValue<string>();
 
-    bool isVanillaInterior = StatsTracker.VanillaInteriorNames.TryGetValue(interiorNameIndirect, out string interiorName);
-    StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay.Count > 0 ? 1 : 0), isVanillaInterior ? interiorName : interiorNameIndirect);
-    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay.Count > 0;
+      bool isVanillaInterior = StatsTracker.VanillaInteriorNames.TryGetValue(interiorNameIndirect, out string interiorName);
+      StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + (appSpawnedThisDay.Count > 0 ? 1 : 0), isVanillaInterior ? interiorName : interiorNameIndirect);
+      StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay.Count > 0;
 
-    StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
-    StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
+      StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
+      StatsTracker.DayStats?.BottomLineTrue += totalStartScrapValue;
 
-    StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
-    HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
+      StatsTracker.DayStats?.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
+      HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
+    }
   }
 
-  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
-  [HarmonyPrefix]
-  private static void TrackSID(RoundManager __instance, NetworkObjectReference[] spawnedScrap)
+  [HarmonyPatch]
+  private static class TrackSID
   {
-    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client) || GameNetworkManager.Instance.gameVersionNum < 60)
-      return;
+    private static bool Prepare() => true;
+    private static MethodBase TargetMethod() => AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
+    private static void Prefix(RoundManager __instance, NetworkObjectReference[] spawnedScrap) 
+    {      
+      if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client) || GameNetworkManager.Instance.gameVersionNum < 60)
+        return;
 
-    spawnedScrap[0].TryGet(out var firstNetObj);
-    GrabbableObject first = firstNetObj.GetComponent<GrabbableObject>();
-    if (first == null) 
-    {
-      StatsTracker.Logger.LogWarning("Unable to retrieve first GrabbableObject from the spawned objects");
-      return;
-    }
-
-    foreach (NetworkObjectReference netObjRef in spawnedScrap)
-    {
-      netObjRef.TryGet(out var netObj);
-      GrabbableObject component = netObj.GetComponent<GrabbableObject>();
-      if (component == null)
+      spawnedScrap[0].TryGet(out var firstNetObj);
+      GrabbableObject first = firstNetObj.GetComponent<GrabbableObject>();
+      if (first == null) 
       {
-        StatsTracker.Logger.LogWarning("Unable to retrieve some GrabbableObject from the spawned objects");
+        StatsTracker.Logger.LogWarning("Unable to retrieve first GrabbableObject from the spawned objects");
         return;
       }
 
-      if (component.itemProperties.name != first.itemProperties.name)
+      foreach (NetworkObjectReference netObjRef in spawnedScrap)
       {
-        return;
-      }
-    }
+        netObjRef.TryGet(out var netObj);
+        GrabbableObject component = netObj.GetComponent<GrabbableObject>();
+        if (component == null)
+        {
+          StatsTracker.Logger.LogWarning("Unable to retrieve some GrabbableObject from the spawned objects");
+          return;
+        }
 
-    StatsTracker.DayStats?.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
+        if (component.itemProperties.name != first.itemProperties.name)
+        {
+          return;
+        }
+      }
+
+      StatsTracker.DayStats?.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
+    }
   }
 
   [HarmonyPatch]
   private static class TrackInfes
   {
-    private static PropertyInfo? enemyRushIndexInfo = null;
+    private static FieldInfo? enemyRushIndexInfo = null;
     private static bool Prepare()
     { 
-      enemyRushIndexInfo = AccessTools.Property(typeof(RoundManager), nameof(RoundManager.enemyRushIndex));
+      enemyRushIndexInfo = AccessTools.Field(typeof(RoundManager), nameof(RoundManager.enemyRushIndex));
       return enemyRushIndexInfo != null;
     }
     private static MethodBase TargetMethod() => AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
@@ -130,10 +138,10 @@ internal class ItemAndEventTracker
   [HarmonyPatch]
   private static class TrackIndoorFog
   {
-    private static PropertyInfo? indoorFogInfo = null;
+    private static FieldInfo? indoorFogInfo = null;
     private static bool Prepare()
     {
-      indoorFogInfo = AccessTools.Property(typeof(RoundManager), nameof(RoundManager.indoorFog));
+      indoorFogInfo = AccessTools.Field(typeof(RoundManager), nameof(RoundManager.indoorFog));
       return indoorFogInfo != null;
     }
     private static MethodBase TargetMethod() => AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
@@ -159,7 +167,6 @@ internal class ItemAndEventTracker
     }
   }
 
-  // Gotta work on this still
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
   [HarmonyPrefix]
   private static void TrackMissedItems(RoundManager __instance)
@@ -281,6 +288,7 @@ internal class ItemAndEventTracker
       KnifeItemInfo = AccessTools.TypeByName(nameof(KnifeItem));
       return KnifeItemInfo != null;
     }
+    private static MethodBase TargetMethod() => AccessTools.Method(typeof(GrabbableObject), nameof(GrabbableObject.Start));
     private static void Prefix(GrabbableObject __instance)
     {
       if (!(KnifeItemInfo!.IsInstanceOfType(__instance)))
