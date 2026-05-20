@@ -131,7 +131,6 @@ internal class ItemAndEventTracker
     StatsTracker.DayStats!.BottomLine += totalStartScrapValue;
 
     StatsTracker.DayStats!.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
-    HazardTracker.turretCount = HazardTracker.landmineCount = HazardTracker.spiketrapCount = 0;
   }
 
   private static void TrackSID(RoundManager __instance, NetworkObjectReference[] spawnedScrap)
