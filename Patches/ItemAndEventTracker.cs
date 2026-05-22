@@ -317,11 +317,12 @@ internal class ItemAndEventTracker
     if (giftSpawnedThisDay)
     {
       valueFromGiftSpawner[netObject] = originalGiftValue;
-      StatsTracker.DayStats!.BottomLineTrue += newScrapValue - originalGiftValue;
+      StatsTracker.DayStats!.BottomLineTrue -= originalGiftValue;
     }
     else
     {
       objectsExtraSpawnedThisDay.Remove(netObject);
+      StatsTracker.DayStats!.BottomLineTrue -= newScrapValue;
       StatsTracker.DayStats!.ExtraFromOldGift += newScrapValue - originalGiftValue;
     }
   }
