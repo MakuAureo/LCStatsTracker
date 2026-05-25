@@ -52,7 +52,7 @@ internal class ItemAndEventTracker
     Harmony.Patch(AccessTools.Method(typeof(LungProp), nameof(LungProp.Start)), postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(CountApp)));
     Harmony.Patch(AccessTools.Method(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkSpawn)), postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackSpawnedItems)));
     Harmony.Patch(AccessTools.Method(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkDespawn)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackMissedItems)));
-    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackCollectedItems)));
+    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackCollectedItems)));
   
     if (StatsTracker.GiftBoxItemType != null) 
       GiftBoxItemTypePath();
