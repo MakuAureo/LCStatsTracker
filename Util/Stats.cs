@@ -100,8 +100,8 @@ internal class Stats
 
   public int CollectedNoExtra;
   public int CollectedTotal;
-  public int BottomLine;
-  public int BottomLineTrue;
+  public int InitialAvailableValue;
+  public int TotalAvailableValue;
   public int ExtraFromOldGift;
 
   public int ValueSold;
@@ -134,8 +134,8 @@ internal class Stats
     Version = version;
     CollectedNoExtra = 0;
     CollectedTotal = 0;
-    BottomLine = 0;
-    BottomLineTrue = 0;
+    InitialAvailableValue = 0;
+    TotalAvailableValue = 0;
     ExtraFromOldGift = 0;
     ValueSold = 0;
     NewQuota = 0;

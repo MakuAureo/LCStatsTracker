@@ -130,7 +130,7 @@ internal class ItemAndEventTracker
 
     bool isVanillaInterior = StatsTracker.VanillaInteriorNames.TryGetValue(interiorNameIndirect, out string interiorName);
     StatsTracker.DayStats!.DungeonInfo = new(spawnedScrap.Length + appSpawnedThisDay.Count, isVanillaInterior ? interiorName : interiorNameIndirect);
-    StatsTracker.DayStats!.BottomLine += totalStartScrapValue;
+    StatsTracker.DayStats!.InitialAvailableValue += totalStartScrapValue;
 
     StatsTracker.DayStats!.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
   }
@@ -208,7 +208,7 @@ internal class ItemAndEventTracker
   {
     yield return new WaitUntil(() => instance.scrapValue != 0);
 
-    StatsTracker.DayStats!.BottomLineTrue += instance.scrapValue;
+    StatsTracker.DayStats!.TotalAvailableValue += instance.scrapValue;
   }
 
   private static void PopulateObjectInGiftValueForAllClients(object __instance)
@@ -320,12 +320,12 @@ internal class ItemAndEventTracker
     if (giftSpawnedThisDay)
     {
       valueFromGiftSpawner[netObject] = originalGiftValue;
-      StatsTracker.DayStats!.BottomLineTrue -= originalGiftValue;
+      StatsTracker.DayStats!.TotalAvailableValue -= originalGiftValue;
     }
     else
     {
       objectsExtraSpawnedThisDay.Remove(netObject);
-      StatsTracker.DayStats!.BottomLineTrue -= newScrapValue;
+      StatsTracker.DayStats!.TotalAvailableValue -= newScrapValue;
       StatsTracker.DayStats!.ExtraFromOldGift += newScrapValue - originalGiftValue;
     }
   }
@@ -370,13 +370,13 @@ internal class ItemAndEventTracker
 
   private static void TrackKnifeBeforePopping(ButlerEnemyAI __instance)
   {
-    StatsTracker.DayStats!.BottomLineTrue += knifeValue;
+    StatsTracker.DayStats!.TotalAvailableValue += knifeValue;
     StatsTracker.DayStats!.KnifeInfo.AddToAvailable(knifeValue);
   }
 
   private static void TrackButlerPopAndRemoveFakeValue(ButlerEnemyAI __instance)
   {
-    StatsTracker.DayStats!.BottomLineTrue -= knifeValue;
+    StatsTracker.DayStats!.TotalAvailableValue -= knifeValue;
   }
 
   private static void TrackEggs(GiantKiwiAI __instance, int[] eggScrapValues)
