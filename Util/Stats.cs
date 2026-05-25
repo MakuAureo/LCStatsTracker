@@ -48,10 +48,11 @@ internal class GiftBoxInfo(int newScrapValue, int GiftScrapValue)
   public bool Collected = false;
 }
 
-internal class MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay, int ScrapInsideGiftValue = 0)
+internal class MissingItemInfo(string Name, int Value, Vector3 SpawnPosition, Vector3 DespawnPosition, bool CollectedOnPreviousDay, int ScrapInsideGiftValue = 0)
 {
   public int Value = Value;
   public string ItemType = Name;
+  public double[] SpawnPosition = [Math.Round(SpawnPosition.x, 1), Math.Round(SpawnPosition.y, 1), Math.Round(SpawnPosition.z, 1)];
   public double[] DespawnPosition = [Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1)];
   public bool CollectedOnPreviousDay = CollectedOnPreviousDay;
   public int ScrapInsideGiftValue = ScrapInsideGiftValue;

@@ -18,6 +18,7 @@ internal class ItemAndEventTracker
   private static readonly HashSet<NetworkObjectReference> objectsExtraSpawnedThisDay = [];
   private static readonly Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = [];
   private static readonly Dictionary<NetworkObjectReference, int> indexFromGiftBox = [];
+  private static readonly Dictionary<NetworkObjectReference, Vector3> spawnPostionOfItem = [];
 
   public static void ApplyItemAndEventTrackerPatches(Harmony Harmony)
   {
@@ -198,6 +199,7 @@ internal class ItemAndEventTracker
       return;
 
     objectsExtraSpawnedThisDay.Add(gObject.NetworkObject);
+    spawnPostionOfItem[gObject.NetworkObject] = new Vector3(gObject.transform.position.x, gObject.transform.position.y, gObject.transform.position.z);
     StartOfRound.Instance.StartCoroutine(WaitUntilItemValueHasBeenSetAndUpdateBottomLine(gObject));
   }
 
