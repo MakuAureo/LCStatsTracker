@@ -105,6 +105,7 @@ internal class ItemAndEventTracker
     objectsExtraSpawnedThisDay.Clear();
     valueFromGiftSpawner.Clear();
     indexFromGiftBox.Clear();
+    spawnPostionOfItem.Clear();
   }
 
   private static void TrackDungeonInfo(RoundManager __instance, NetworkObjectReference[] spawnedScrap, int[] allScrapValue)
