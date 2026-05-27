@@ -249,6 +249,7 @@ internal class ItemAndEventTracker
             gObject.itemProperties.name : 
             gObject.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, 
           gObject.scrapValue,
+          spawnPostionOfItem[gObject.NetworkObject],
           gObject.transform.position,
           !objectsExtraSpawnedThisDay.Contains(gObject.NetworkObject),
           StatsTracker.GiftBoxItemType?.IsInstanceOfType(gObject) == true ? 

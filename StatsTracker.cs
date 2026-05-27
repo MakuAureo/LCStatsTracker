@@ -34,6 +34,7 @@ public class StatsTracker : BaseUnityPlugin
   public static readonly Type? KnifeItemType = AccessTools.TypeByName(nameof(KnifeItem));
   public static readonly Type? ShotgunItemType = AccessTools.TypeByName(nameof(ShotgunItem));
   public static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
+  public static readonly Type? BuyableVehicleType = AccessTools.TypeByName(nameof(BuyableVehicle));
   public static readonly FieldInfo? DeactivatedField = AccessTools.Field(typeof(GrabbableObject), nameof(GrabbableObject.deactivated));
 
   private void Awake()
@@ -60,6 +61,7 @@ public class StatsTracker : BaseUnityPlugin
     Patches.PlayerTracker.ApplyPlayerTrackerPatches(Harmony);
     Patches.ServerEvents.ApplyServerEventPatches(Harmony);
     Patches.ShipTracker.ApplyShipTrackerPatches(Harmony);
+    Patches.ShopTracker.ApplyShopTrackerPatches(Harmony);
     Patches.SpawnTracker.ApplySpawnTrackerPatches(Harmony);
 
     if (Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73"))

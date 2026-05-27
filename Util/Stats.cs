@@ -84,6 +84,13 @@ internal class SpawnInfo(EnemyType EnemyType, string Time)
   public string TimeOfDeath = "";
 }
 
+internal class FurnitureInfo(bool InStock, int Price, float Luck)
+{
+  public bool IsInStock = InStock;
+  public int Price = Price;
+  public float Luck = Luck;
+}
+
 internal class Stats
 {
   public MoonInfo MoonInfo;
@@ -123,6 +130,9 @@ internal class Stats
   public List<GiftBoxInfo> GiftBoxesOpened;
   public List<MissingItemInfo> MissedItems;
 
+  public Dictionary<string, int> ShopSales;
+  public Dictionary<string, FurnitureInfo> FurnitureInfo;
+
   public Stats(int version, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
   {
     MoonInfo = new(moonName, weather);
@@ -151,8 +161,17 @@ internal class Stats
     NightTimeSpawns = [];
     GiftBoxesOpened = [];
     MissedItems = [];
+    ShopSales = [];
+    FurnitureInfo = [];
 
     foreach (GameNetcodeStuff.PlayerControllerB player in allPlayers)
       Players[player.playerSteamId] = new(player.playerUsername);
+
+    Terminal terminal = UnityEngine.Object.FindAnyObjectByType<Terminal>();
+    foreach (UnlockableItem furniture in StartOfRound.Instance.unlockablesList.unlockables)
+    {
+      if (furniture.shopSelectionNode == null) continue;
+      FurnitureInfo[furniture.unlockableName] = new(furniture.alwaysInStock || terminal.ShipDecorSelection.Contains(furniture.shopSelectionNode), furniture.shopSelectionNode.itemCost, furniture.luckValue);
+    }
   }
 }
