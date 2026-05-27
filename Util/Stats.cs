@@ -84,11 +84,13 @@ internal class SpawnInfo(EnemyType EnemyType, string Time)
   public string TimeOfDeath = "";
 }
 
-internal class FurnitureInfo(bool InStock, int Price, float Luck)
+internal class FurnitureInfo(UnlockableItem Furniture, Terminal Terminal)
 {
-  public bool IsInStock = InStock;
-  public int Price = Price;
-  public float Luck = Luck;
+  public bool InStock = Furniture.alwaysInStock || Terminal.ShipDecorSelection.Contains(Furniture.shopSelectionNode);
+  public bool Owned = Furniture.alreadyUnlocked || Furniture.hasBeenUnlockedByPlayer;
+  public int ApparentPrice = Furniture.shopSelectionNode.itemCost;
+  public int RealPrice = Furniture.shopSelectionNode.terminalOptions[0].result.itemCost;
+  public float Luck = Furniture.luckValue;
 }
 
 internal class Stats
@@ -166,12 +168,5 @@ internal class Stats
 
     foreach (GameNetcodeStuff.PlayerControllerB player in allPlayers)
       Players[player.playerSteamId] = new(player.playerUsername);
-
-    Terminal terminal = UnityEngine.Object.FindAnyObjectByType<Terminal>();
-    foreach (UnlockableItem furniture in StartOfRound.Instance.unlockablesList.unlockables)
-    {
-      if (furniture.shopSelectionNode == null) continue;
-      FurnitureInfo[furniture.unlockableName] = new(furniture.alwaysInStock || terminal.ShipDecorSelection.Contains(furniture.shopSelectionNode), furniture.shopSelectionNode.itemCost, furniture.luckValue);
-    }
   }
 }

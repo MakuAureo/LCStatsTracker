@@ -300,8 +300,6 @@ internal class ItemAndEventTracker
 
     int indexForNewlyOpenedGift = StatsTracker.DayStats!.GiftBoxesOpened.Count;
     StatsTracker.DayStats!.GiftBoxesOpened.Add(new(instance.objectInPresentValue, instance.scrapValue));
-    
-    // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
     StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, indexForNewlyOpenedGift, instance.scrapValue, instance.objectInPresentValue, objectsExtraSpawnedThisDay.Contains(instance.NetworkObject)));
   }
 
