@@ -130,7 +130,7 @@ internal class ItemAndEventTracker
 
     bool isVanillaInterior = StatsTracker.VanillaInteriorNames.TryGetValue(interiorNameIndirect, out string interiorName);
     StatsTracker.DayStats!.DungeonInfo = new(spawnedScrap.Length + appSpawnedThisDay.Count, isVanillaInterior ? interiorName : interiorNameIndirect);
-    StatsTracker.DayStats!.InitialAvailableValue += totalStartScrapValue;
+    StatsTracker.DayStats!.PerformanceInfo.InitialAvailableValue += totalStartScrapValue;
 
     StatsTracker.DayStats!.HazardInfo = new(HazardTracker.turretCount, HazardTracker.landmineCount, HazardTracker.spiketrapCount);
   }
@@ -162,18 +162,18 @@ internal class ItemAndEventTracker
         return;
     }
 
-    StatsTracker.DayStats!.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
+    StatsTracker.DayStats!.EventInfo.SIDType = first.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText;
   }
 
   private static void TrackInfestation(RoundManager __instance)
   {
     if (__instance.enemyRushIndex != -1)
-      StatsTracker.DayStats!.InfestationType = __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name;
+      StatsTracker.DayStats!.EventInfo.InfestationType = __instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.name;
   }
 
   private static void TrackIndoorFog(RoundManager __instance)
   {
-    StatsTracker.DayStats!.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
+    StatsTracker.DayStats!.EventInfo.IndoorFog = __instance.indoorFog.gameObject.activeSelf;
   }
 
   private static void TrackMeteorShower(TimeOfDay __instance)
@@ -181,12 +181,12 @@ internal class ItemAndEventTracker
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
-    StatsTracker.DayStats!.MeteorShowerTime = StatsTracker.GetCurrentTimeString();
+    StatsTracker.DayStats!.EventInfo.MeteorShowerTime = StatsTracker.GetCurrentTimeString();
   }
 
   private static void CountApp(LungProp __instance)
   {
-    StatsTracker.DayStats!.AppSpawned = true;
+    StatsTracker.DayStats!.EventInfo.AppSpawned = true;
     appSpawnedThisDay.Add(__instance.NetworkObject);
   }
 
@@ -208,7 +208,7 @@ internal class ItemAndEventTracker
   {
     yield return new WaitUntil(() => instance.scrapValue != 0);
 
-    StatsTracker.DayStats!.TotalAvailableValue += instance.scrapValue;
+    StatsTracker.DayStats!.PerformanceInfo.TotalAvailableValue += instance.scrapValue;
   }
 
   private static void PopulateObjectInGiftValueForAllClients(object __instance)
@@ -270,12 +270,12 @@ internal class ItemAndEventTracker
         if (!objectsExtraSpawnedThisDay.Contains(gObj.NetworkObject))
           continue;
 
-        StatsTracker.DayStats!.CollectedTotal += gObj.scrapValue;
+        StatsTracker.DayStats!.PerformanceInfo.CollectedTotal += gObj.scrapValue;
 
         if (objectsNaturallySpawnedThisDay.Contains(gObj.NetworkObject))
-          StatsTracker.DayStats!.CollectedNoExtra += gObj.scrapValue;
+          StatsTracker.DayStats!.PerformanceInfo.CollectedNoExtra += gObj.scrapValue;
         else if (valueFromGiftSpawner.TryGetValue(gObj.NetworkObject, out int originalGitfValue))
-          StatsTracker.DayStats!.CollectedNoExtra += originalGitfValue;
+          StatsTracker.DayStats!.PerformanceInfo.CollectedNoExtra += originalGitfValue;
         else if (gObj.itemProperties.name == "RedLocustHive")
           StatsTracker.DayStats!.BeeInfo.AddToCollected(gObj.scrapValue);
         else if (StatsTracker.EggItemType?.IsInstanceOfType(gObj) == true)
@@ -319,13 +319,13 @@ internal class ItemAndEventTracker
     if (giftSpawnedThisDay)
     {
       valueFromGiftSpawner[netObject] = originalGiftValue;
-      StatsTracker.DayStats!.TotalAvailableValue -= originalGiftValue;
+      StatsTracker.DayStats!.PerformanceInfo.TotalAvailableValue -= originalGiftValue;
     }
     else
     {
       objectsExtraSpawnedThisDay.Remove(netObject);
-      StatsTracker.DayStats!.TotalAvailableValue -= newScrapValue;
-      StatsTracker.DayStats!.ExtraFromOldGift += newScrapValue - originalGiftValue;
+      StatsTracker.DayStats!.PerformanceInfo.TotalAvailableValue -= newScrapValue;
+      StatsTracker.DayStats!.PerformanceInfo.ExtraFromOldGift += newScrapValue - originalGiftValue;
     }
   }
 
@@ -369,13 +369,13 @@ internal class ItemAndEventTracker
 
   private static void TrackKnifeBeforePopping(ButlerEnemyAI __instance)
   {
-    StatsTracker.DayStats!.TotalAvailableValue += knifeValue;
+    StatsTracker.DayStats!.PerformanceInfo.TotalAvailableValue += knifeValue;
     StatsTracker.DayStats!.KnifeInfo.AddToAvailable(knifeValue);
   }
 
   private static void TrackButlerPopAndRemoveFakeValue(ButlerEnemyAI __instance)
   {
-    StatsTracker.DayStats!.TotalAvailableValue -= knifeValue;
+    StatsTracker.DayStats!.PerformanceInfo.TotalAvailableValue -= knifeValue;
   }
 
   private static void TrackEggs(GiantKiwiAI __instance, int[] eggScrapValues)

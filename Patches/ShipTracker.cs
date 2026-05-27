@@ -11,6 +11,6 @@ internal class ShipTracker
 
   private static void RegisterTakeOffTime(StartOfRound __instance)
   {
-    StatsTracker.DayStats!.TakeOffTime = StatsTracker.GetCurrentTimeString();
+    StatsTracker.DayStats!.EventInfo.TakeOffTime = StatsTracker.GetCurrentTimeString();
   }
 }

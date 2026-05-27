@@ -4,6 +4,66 @@ using UnityEngine;
 
 namespace StatsTracker.Util;
 
+internal class MoonInfo(string Name, string Weather)
+{
+  public string Name = Name;
+  public string Weather = Weather;
+}
+
+internal class DungeonInfo(int ItemCount, string Interior)
+{
+  public int ItemCount = ItemCount;
+  public string Interior = Interior;
+}
+
+internal class HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
+{
+  public int TurretCount = TurretCount;
+  public int LandmineCount = LandmineCount;
+  public int SpiketrapCount = SpiketrapCount;
+}
+
+internal class PerformanceInfo()
+{
+  public int CollectedNoExtra = 0;
+  public int CollectedTotal = 0;
+  public int InitialAvailableValue = 0;
+  public int TotalAvailableValue = 0;
+  public int ExtraFromOldGift = 0;
+}
+
+internal class SpecialItemInfo()
+{
+  public List<int> Available = [];
+  public List<int> Collected = [];
+
+  public void AddToAvailable(int value)
+  {
+    Available.Add(value);
+  }
+
+  public void AddToCollected(int value)
+  {
+    Collected.Add(value);
+  }
+}
+
+internal class QuotaInfo()
+{
+  public int ValueSold = 0;
+  public int NewQuota = 0;
+}
+
+internal class EventInfo()
+{
+  public bool AppSpawned = false;
+  public bool IndoorFog = false;
+  public string TakeOffTime = "";
+  public string SIDType = "";
+  public string InfestationType = "";
+  public string MeteorShowerTime = "";
+}
+
 internal class PlayerStats(string name)
 {
   public string Name = name;
@@ -25,20 +85,20 @@ internal class PlayerStats(string name)
   }
 }
 
-internal class SpecialItemInfo()
+internal class SpawnInfo(EnemyType EnemyType, string Time)
 {
-  public List<int> Available = [];
-  public List<int> Collected = [];
+  public string Enemy = EnemyType.enemyName;
+  public string SpawnTime = Time;
+  public string TimeOfDeath = "";
+}
 
-  public void AddToAvailable(int value)
-  {
-    Available.Add(value);
-  }
-
-  public void AddToCollected(int value)
-  {
-    Collected.Add(value);
-  }
+internal class FurnitureInfo(UnlockableItem Furniture, Terminal Terminal)
+{
+  public bool InStock = Furniture.alwaysInStock || Terminal.ShipDecorSelection.Contains(Furniture.shopSelectionNode);
+  public bool Owned = Furniture.alreadyUnlocked || Furniture.hasBeenUnlockedByPlayer;
+  public int ApparentPrice = Furniture.shopSelectionNode.itemCost;
+  public int RealPrice = Furniture.shopSelectionNode.terminalOptions[0].result.itemCost;
+  public float Luck = Furniture.luckValue;
 }
 
 internal class GiftBoxInfo(int newScrapValue, int GiftScrapValue)
@@ -58,70 +118,25 @@ internal class MissingItemInfo(string Name, int Value, Vector3 SpawnPosition, Ve
   public int ScrapInsideGiftValue = ScrapInsideGiftValue;
 }
 
-internal class HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
-{
-  public int TurretCount = TurretCount;
-  public int LandmineCount = LandmineCount;
-  public int SpiketrapCount = SpiketrapCount;
-}
-
-internal class MoonInfo(string Name, string Weather)
-{
-  public string Name = Name;
-  public string Weather = Weather;
-}
-
-internal class DungeonInfo(int ItemCount, string Interior)
-{
-  public int ItemCount = ItemCount;
-  public string Interior = Interior;
-}
-
-internal class SpawnInfo(EnemyType EnemyType, string Time)
-{
-  public string Enemy = EnemyType.enemyName;
-  public string SpawnTime = Time;
-  public string TimeOfDeath = "";
-}
-
-internal class FurnitureInfo(UnlockableItem Furniture, Terminal Terminal)
-{
-  public bool InStock = Furniture.alwaysInStock || Terminal.ShipDecorSelection.Contains(Furniture.shopSelectionNode);
-  public bool Owned = Furniture.alreadyUnlocked || Furniture.hasBeenUnlockedByPlayer;
-  public int ApparentPrice = Furniture.shopSelectionNode.itemCost;
-  public int RealPrice = Furniture.shopSelectionNode.terminalOptions[0].result.itemCost;
-  public float Luck = Furniture.luckValue;
-}
-
 internal class Stats
 {
+  public int Seed;
+  public int Version;
+
   public MoonInfo MoonInfo;
   public DungeonInfo? DungeonInfo;
   public HazardInfo? HazardInfo;
+
+  public PerformanceInfo PerformanceInfo;
 
   public SpecialItemInfo BeeInfo;
   public SpecialItemInfo EggInfo;
   public SpecialItemInfo KnifeInfo;
   public SpecialItemInfo ShotgunInfo;
 
-  public int Seed;
-  public int Version;
+  public QuotaInfo QuotaInfo;
 
-  public int CollectedNoExtra;
-  public int CollectedTotal;
-  public int InitialAvailableValue;
-  public int TotalAvailableValue;
-  public int ExtraFromOldGift;
-
-  public int ValueSold;
-  public int NewQuota;
-
-  public bool AppSpawned;
-  public bool IndoorFog;
-  public string TakeOffTime;
-  public string SIDType;
-  public string InfestationType;
-  public string MeteorShowerTime;
+  public EventInfo EventInfo;
 
   public Dictionary<ulong, PlayerStats> Players;
 
@@ -129,34 +144,24 @@ internal class Stats
   public List<SpawnInfo> DayTimeSpawns;
   public List<SpawnInfo> NightTimeSpawns;
 
-  public List<GiftBoxInfo> GiftBoxesOpened;
-  public List<MissingItemInfo> MissedItems;
-
   public Dictionary<string, int> ShopSales;
   public Dictionary<string, FurnitureInfo> FurnitureInfo;
 
+  public List<GiftBoxInfo> GiftBoxesOpened;
+  public List<MissingItemInfo> MissedItems;
+
   public Stats(int version, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
   {
+    Seed = 0;
+    Version = version;
     MoonInfo = new(moonName, weather);
+    PerformanceInfo = new();
     BeeInfo = new();
     EggInfo = new();
     KnifeInfo = new();
     ShotgunInfo = new();
-    Seed = 0;
-    Version = version;
-    CollectedNoExtra = 0;
-    CollectedTotal = 0;
-    InitialAvailableValue = 0;
-    TotalAvailableValue = 0;
-    ExtraFromOldGift = 0;
-    ValueSold = 0;
-    NewQuota = 0;
-    AppSpawned = false;
-    IndoorFog = false;
-    TakeOffTime = "";
-    SIDType = "";
-    InfestationType = "";
-    MeteorShowerTime = "";
+    QuotaInfo = new();
+    EventInfo = new();
     Players = [];
     IndoorSpawns = [];
     DayTimeSpawns = [];

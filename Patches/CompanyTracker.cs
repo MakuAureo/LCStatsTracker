@@ -26,7 +26,7 @@ internal class CompanyTracker
       if (!__instance.itemsOnCounter[i].itemProperties.isScrap)
         continue;
       else
-        StatsTracker.DayStats!.ValueSold += __instance.itemsOnCounter[i].scrapValue;
+        StatsTracker.DayStats!.QuotaInfo.ValueSold += __instance.itemsOnCounter[i].scrapValue;
     }
 
     UpdateItemsOnCounterCount:
@@ -86,7 +86,7 @@ internal class HQoLTracker
       StatsTracker.Logger.LogWarning("Failed to find HQoL instance, sold value will not be sync'd");
     }
 
-    StatsTracker.DayStats!.ValueSold = totalSold;
+    StatsTracker.DayStats!.QuotaInfo.ValueSold = totalSold;
     totalSold = 0;
   }
 
