@@ -13,11 +13,13 @@ internal class ItemAndEventTracker
 {
   private const int knifeValue = 35;
 
+  private static readonly List<Util.GiftBoxInfo> giftOpenInOrbit = [];
   private static readonly HashSet<NetworkObjectReference> appSpawnedThisDay = [];
   private static readonly HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = [];
   private static readonly HashSet<NetworkObjectReference> objectsExtraSpawnedThisDay = [];
   private static readonly Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = [];
   private static readonly Dictionary<NetworkObjectReference, int> indexFromGiftBox = [];
+  private static readonly Dictionary<NetworkObjectReference, int> giftBoxAge = [];
   private static readonly Dictionary<NetworkObjectReference, Vector3> spawnPostionOfItem = [];
 
   public static void ApplyItemAndEventTrackerPatches(Harmony Harmony)
@@ -65,6 +67,8 @@ internal class ItemAndEventTracker
 
       MethodInfo GiftBoxItemInternalValueSet = AccessTools.Method(StatsTracker.GiftBoxItemType, nameof(GiftBoxItem.InitializeAfterPositioning)) ?? AccessTools.Method(StatsTracker.GiftBoxItemType, nameof(GiftBoxItem.Start));
       Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(PopulateObjectInGiftValueForAllClients)));
+      Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackGiftBoxAge)));
+      Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(IncreaseAgeOfAllGifts)));
     }
 
     Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackHive)));
@@ -100,6 +104,10 @@ internal class ItemAndEventTracker
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
+    foreach (Util.GiftBoxInfo giftInfo in giftOpenInOrbit)
+      StatsTracker.DayStats!.GiftBoxesOpened.Add(giftInfo);
+
+    giftOpenInOrbit.Clear();
     appSpawnedThisDay.Clear();
     objectsNaturallySpawnedThisDay.Clear();
     objectsExtraSpawnedThisDay.Clear();
@@ -235,6 +243,22 @@ internal class ItemAndEventTracker
     instance.objectInPresentValue = (int)((float)random.Next(itemInGift.minValue + 25, itemInGift.maxValue + 35) * RoundManager.Instance.scrapValueMultiplier);
   }
 
+  private static void TrackGiftBoxAge(object __instance)
+  {
+    GiftBoxItem instance = (GiftBoxItem)__instance;
+    giftBoxAge[instance.NetworkObject] = 0;
+  }
+
+  // CHANGE HOOK POINT TO END OF DAY INSTEAD OF START OF NEXT
+  private static void IncreaseAgeOfAllGifts(RoundManager __instance)
+  {
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+      return;
+
+    foreach (NetworkObjectReference giftRef in giftBoxAge.Keys)
+      giftBoxAge[giftRef]++;
+  }
+
   private static void TrackMissedItems(NetworkBehaviour __instance)
   {
     if (__instance is not GrabbableObject || !StatsTracker.dayHasStarted)
@@ -255,6 +279,8 @@ internal class ItemAndEventTracker
           StatsTracker.GiftBoxItemType?.IsInstanceOfType(gObject) == true ? 
             Traverse.Create(gObject).Field(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>() : 
             0));
+
+    giftBoxAge.Remove(gObject.NetworkObject);
   }
 
   private static void TrackCollectedItems()
@@ -296,10 +322,13 @@ internal class ItemAndEventTracker
       return;
 
     if (!StatsTracker.dayHasStarted)
+    {
+      giftOpenInOrbit.Add(new(instance.objectInPresentValue, instance.scrapValue, giftBoxAge[instance.NetworkObject]));
       return;
+    }
 
     int indexForNewlyOpenedGift = StatsTracker.DayStats!.GiftBoxesOpened.Count;
-    StatsTracker.DayStats!.GiftBoxesOpened.Add(new(instance.objectInPresentValue, instance.scrapValue));
+    StatsTracker.DayStats!.GiftBoxesOpened.Add(new(instance.objectInPresentValue, instance.scrapValue, giftBoxAge[instance.NetworkObject]));
     StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, indexForNewlyOpenedGift, instance.scrapValue, instance.objectInPresentValue, objectsExtraSpawnedThisDay.Contains(instance.NetworkObject)));
   }
 

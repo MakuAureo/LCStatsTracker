@@ -101,10 +101,11 @@ internal class FurnitureInfo(UnlockableItem Furniture, Terminal Terminal)
   public float Luck = Furniture.luckValue;
 }
 
-internal class GiftBoxInfo(int newScrapValue, int GiftScrapValue)
+internal class GiftBoxInfo(int newScrapValue, int GiftScrapValue, int GiftBoxAge)
 {
   public int NewScrapValue = newScrapValue;
   public int GiftScrapValue = GiftScrapValue;
+  public int GiftBoxAge = GiftBoxAge;
   public bool Collected = false;
 }
 
