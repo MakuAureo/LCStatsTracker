@@ -29,6 +29,8 @@ internal class ShopTracker
 
   private static void TrackCurrentFurniture(Terminal __instance)
   {
+    if (StatsTracker.DayStats == null) return;
+
     foreach (UnlockableItem furniture in StartOfRound.Instance.unlockablesList.unlockables)
     {
       if (furniture.shopSelectionNode == null) continue;

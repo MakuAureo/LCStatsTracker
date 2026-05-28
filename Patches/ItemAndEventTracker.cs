@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
@@ -68,7 +69,7 @@ internal class ItemAndEventTracker
       MethodInfo GiftBoxItemInternalValueSet = AccessTools.Method(StatsTracker.GiftBoxItemType, nameof(GiftBoxItem.InitializeAfterPositioning)) ?? AccessTools.Method(StatsTracker.GiftBoxItemType, nameof(GiftBoxItem.Start));
       Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(PopulateObjectInGiftValueForAllClients)));
       Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackGiftBoxAge)));
-      Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(IncreaseAgeOfAllGifts)));
+      Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(IncreaseAgeOfAllGifts)));
     }
 
     Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackHive)));
@@ -249,13 +250,9 @@ internal class ItemAndEventTracker
     giftBoxAge[instance.NetworkObject] = 0;
   }
 
-  // CHANGE HOOK POINT TO END OF DAY INSTEAD OF START OF NEXT
   private static void IncreaseAgeOfAllGifts(RoundManager __instance)
   {
-    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
-      return;
-
-    foreach (NetworkObjectReference giftRef in giftBoxAge.Keys)
+    foreach (NetworkObjectReference giftRef in giftBoxAge.Keys.ToList())
       giftBoxAge[giftRef]++;
   }
 
@@ -265,6 +262,8 @@ internal class ItemAndEventTracker
       return;
 
     GrabbableObject gObject = (GrabbableObject)__instance;
+    giftBoxAge.Remove(gObject.NetworkObject);
+
     if (!gObject.itemProperties.isScrap || gObject is RagdollGrabbableObject || (bool?)(StatsTracker.DeactivatedField?.GetValue(gObject)) == true)
       return;
 
@@ -279,8 +278,6 @@ internal class ItemAndEventTracker
           StatsTracker.GiftBoxItemType?.IsInstanceOfType(gObject) == true ? 
             Traverse.Create(gObject).Field(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>() : 
             0));
-
-    giftBoxAge.Remove(gObject.NetworkObject);
   }
 
   private static void TrackCollectedItems()
