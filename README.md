@@ -10,393 +10,206 @@ The data can only be queried once per day, once it is sent the server will wait 
 
 Just HTTP request it and wait until the day is over to get your stats.
 
-# Currently Tracked Stats
+# JSON Schema
 ```
 {
-   "Seed":19367748,
-   "Version":81,
-   "MoonInfo":{
-      "Name":"68 Artifice",
-      "Weather":"Eclipsed"
-   },
-   "DungeonInfo":{
-      "ItemCount":32,
-      "Interior":"Mineshaft"
-   },
-   "HazardInfo":{
-      "TurretCount":0,
-      "LandmineCount":7,
-      "SpiketrapCount":0
-   },
-   "PerformanceInfo":{
-      "CollectedNoExtra":1852,
-      "CollectedTotal":1988,
-      "InitialAvailableValue":1881,
-      "TotalAvailableValue":2077,
-      "ExtraFromOldGift":0
-   },
-   "BeeInfo":{
-      "Available":[
-         
+  "title": "Stats",
+  "type": "object",
+  "required": [
+    "Seed",
+    "Version",
+    "MoonInfo",
+    "PerformanceInfo",
+    "BeeInfo",
+    "EggInfo",
+    "KnifeInfo",
+    "ShotgunInfo",
+    "QuotaInfo",
+    "EventInfo",
+    "Players",
+    "IndoorSpawns",
+    "DayTimeSpawns",
+    "NightTimeSpawns",
+    "ShopSales",
+    "FurnitureInfo",
+    "GiftBoxesOpened",
+    "MissedItems"
+  ],
+  "properties": {
+    "Seed":    { "type": "integer" },
+    "Version": { "type": "integer" },
+
+    "MoonInfo": {
+      "type": "object",
+      "required": ["Name", "Weather"],
+      "properties": {
+        "Name":    { "type": "string" },
+        "Weather": { "type": "string" }
+      }
+    },
+
+    "DungeonInfo": {
+      "type": ["object", "null"],
+      "required": ["ItemCount", "Interior"],
+      "properties": {
+        "ItemCount": { "type": "integer" },
+        "Interior":  { "type": "string" }
+      }
+    },
+
+    "HazardInfo": {
+      "type": ["object", "null"],
+      "required": ["TurretCount", "LandmineCount", "SpiketrapCount"],
+      "properties": {
+        "TurretCount":    { "type": "integer" },
+        "LandmineCount":  { "type": "integer" },
+        "SpiketrapCount": { "type": "integer" }
+      }
+    },
+
+    "PerformanceInfo": {
+      "type": "object",
+      "required": [
+        "CollectedNoExtra",
+        "CollectedTotal",
+        "InitialAvailableValue",
+        "TotalAvailableValue",
+        "ExtraFromOldGift"
       ],
-      "Collected":[
-         
-      ]
-   },
-   "EggInfo":{
-      "Available":[
-         
+      "properties": {
+        "CollectedNoExtra":      { "type": "integer" },
+        "CollectedTotal":        { "type": "integer" },
+        "InitialAvailableValue": { "type": "integer" },
+        "TotalAvailableValue":   { "type": "integer" },
+        "ExtraFromOldGift":      { "type": "integer" }
+      }
+    },
+
+    "BeeInfo":     { "$ref": "#/$defs/SpecialItemInfo" },
+    "EggInfo":     { "$ref": "#/$defs/SpecialItemInfo" },
+    "KnifeInfo":   { "$ref": "#/$defs/SpecialItemInfo" },
+    "ShotgunInfo": { "$ref": "#/$defs/SpecialItemInfo" },
+
+    "QuotaInfo": {
+      "type": "object",
+      "required": ["ValueSold", "NewQuota"],
+      "properties": {
+        "ValueSold": { "type": "integer" },
+        "NewQuota":  { "type": "integer" }
+      }
+    },
+
+    "EventInfo": {
+      "type": "object",
+      "required": [
+        "AppSpawned",
+        "IndoorFog",
+        "TakeOffTime",
+        "SIDType",
+        "InfestationType",
+        "MeteorShowerTime"
       ],
-      "Collected":[
-         
-      ]
-   },
-   "KnifeInfo":{
-      "Available":[
-         35
-      ],
-      "Collected":[
-         35
-      ]
-   },
-   "ShotgunInfo":{
-      "Available":[
-         60,
-         60
-      ],
-      "Collected":[
-         60
-      ]
-   },
-   "QuotaInfo":{
-      "ValueSold":0,
-      "NewQuota":0
-   },
-   "EventInfo":{
-      "AppSpawned":false,
-      "IndoorFog":false,
-      "TakeOffTime":"12:09 PM",
-      "SIDType":"",
-      "InfestationType":"",
-      "MeteorShowerTime":""
-   },
-   "Players":{
-      "76561198980273231":{
-         "Name":"AureoHatsune",
-         "Alive":true,
-         "Disconnected":false,
-         "TimeOfDeath":"",
-         "CauseOfDeath":""
+      "properties": {
+        "AppSpawned":      { "type": "boolean" },
+        "IndoorFog":       { "type": "boolean" },
+        "TakeOffTime":     { "type": "string" },
+        "SIDType":         { "type": "string" },
+        "InfestationType": { "type": "string" },
+        "MeteorShowerTime":{ "type": "string" }
       }
-   },
-   "IndoorSpawns":[
-      {
-         "Enemy":"Puffer",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"Stingray",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"Spring",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"Nutcracker",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":"10:33 AM"
-      },
-      {
-         "Enemy":"Butler",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":"11:22 AM"
-      },
-      {
-         "Enemy":"Butler Bees",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"Nutcracker",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
+    },
+
+    "Players": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/PlayerStats" }
+    },
+
+    "IndoorSpawns":    { "type": "array", "items": { "$ref": "#/$defs/SpawnInfo" } },
+    "DayTimeSpawns":   { "type": "array", "items": { "$ref": "#/$defs/SpawnInfo" } },
+    "NightTimeSpawns": { "type": "array", "items": { "$ref": "#/$defs/SpawnInfo" } },
+
+    "ShopSales": {
+      "type": "object",
+      "additionalProperties": { "type": "integer" }
+    },
+
+    "FurnitureInfo": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/FurnitureInfo" }
+    },
+
+    "GiftBoxesOpened": { "type": "array", "items": { "$ref": "#/$defs/GiftBoxInfo" } },
+    "MissedItems":     { "type": "array", "items": { "$ref": "#/$defs/MissingItemInfo" } }
+  },
+
+  "$defs": {
+    "SpecialItemInfo": {
+      "type": "object",
+      "required": ["Available", "Collected"],
+      "properties": {
+        "Available": { "type": "array", "items": { "type": "integer" } },
+        "Collected": { "type": "array", "items": { "type": "integer" } }
       }
-   ],
-   "DayTimeSpawns":[
-      
-   ],
-   "NightTimeSpawns":[
-      {
-         "Enemy":"RadMech",
-         "SpawnTime":"7:39 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"Earth Leviathan",
-         "SpawnTime":"7:39 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"ForestGiant",
-         "SpawnTime":"7:39 AM",
-         "TimeOfDeath":"9:58 AM"
-      },
-      {
-         "Enemy":"RadMech",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
-      },
-      {
-         "Enemy":"MouthDog",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":"10:27 AM"
-      },
-      {
-         "Enemy":"ForestGiant",
-         "SpawnTime":"10:13 AM",
-         "TimeOfDeath":""
+    },
+
+    "PlayerStats": {
+      "type": "object",
+      "required": ["Name", "Alive", "Disconnected", "TimeOfDeath", "CauseOfDeath"],
+      "properties": {
+        "Name":        { "type": "string" },
+        "Alive":       { "type": "boolean" },
+        "Disconnected":{ "type": "boolean" },
+        "TimeOfDeath": { "type": "string" },
+        "CauseOfDeath":{ "type": "string" }
       }
-   ],
-   "ShopSales":{
-      "Walkie-talkie":10,
-      "Flashlight":0,
-      "Shovel":50,
-      "Lockpicker":0,
-      "Pro-flashlight":0,
-      "Stun grenade":0,
-      "Boombox":0,
-      "TZP-Inhalant":0,
-      "Zap gun":0,
-      "Jetpack":0,
-      "Extension ladder":0,
-      "Radar-booster":0,
-      "Spray paint":0,
-      "Weed killer":0,
-      "Belt bag":70,
-      "Cruiser":0
-   },
-   "FurnitureInfo":{
-      "Green suit":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":60,
-         "RealPrice":60,
-         "Luck":0.0
-      },
-      "Hazard suit":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":90,
-         "RealPrice":90,
-         "Luck":0.0
-      },
-      "Pajama suit":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":900,
-         "RealPrice":900,
-         "Luck":0.0
-      },
-      "Cozy lights":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":140,
-         "RealPrice":140,
-         "Luck":0.005
-      },
-      "Television":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":130,
-         "RealPrice":130,
-         "Luck":0.02
-      },
-      "Toilet":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":150,
-         "RealPrice":150,
-         "Luck":0.01
-      },
-      "Shower":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":180,
-         "RealPrice":180,
-         "Luck":0.015
-      },
-      "Record player":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":120,
-         "RealPrice":120,
-         "Luck":0.005
-      },
-      "Table":{
-         "InStock":true,
-         "Owned":false,
-         "ApparentPrice":70,
-         "RealPrice":70,
-         "Luck":0.004
-      },
-      "Romantic table":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":120,
-         "RealPrice":120,
-         "Luck":0.005
-      },
-      "Signal translator":{
-         "InStock":true,
-         "Owned":false,
-         "ApparentPrice":255,
-         "RealPrice":255,
-         "Luck":-0.012
-      },
-      "JackOLantern":{
-         "InStock":true,
-         "Owned":true,
-         "ApparentPrice":50,
-         "RealPrice":50,
-         "Luck":0.012
-      },
-      "Welcome mat":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":40,
-         "RealPrice":40,
-         "Luck":0.003
-      },
-      "Goldfish":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":50,
-         "RealPrice":50,
-         "Luck":0.006
-      },
-      "Plushie pajama man":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":100,
-         "RealPrice":100,
-         "Luck":0.003
-      },
-      "Purple Suit":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":70,
-         "RealPrice":70,
-         "Luck":0.0
-      },
-      "Bee Suit":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":110,
-         "RealPrice":110,
-         "Luck":0.0
-      },
-      "Bunny Suit":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":200,
-         "RealPrice":200,
-         "Luck":0.0
-      },
-      "Disco Ball":{
-         "InStock":true,
-         "Owned":false,
-         "ApparentPrice":150,
-         "RealPrice":150,
-         "Luck":0.06
-      },
-      "Microwave":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":80,
-         "RealPrice":80,
-         "Luck":0.01
-      },
-      "Sofa chair":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":150,
-         "RealPrice":150,
-         "Luck":0.008
-      },
-      "Fridge":{
-         "InStock":true,
-         "Owned":false,
-         "ApparentPrice":225,
-         "RealPrice":150,
-         "Luck":0.01
-      },
-      "Classic painting":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":400,
-         "RealPrice":400,
-         "Luck":0.006
-      },
-      "Electric chair":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":140,
-         "RealPrice":140,
-         "Luck":0.012
-      },
-      "Dog house":{
-         "InStock":false,
-         "Owned":false,
-         "ApparentPrice":80,
-         "RealPrice":80,
-         "Luck":0.007
+    },
+
+    "SpawnInfo": {
+      "type": "object",
+      "required": ["Enemy", "SpawnTime", "TimeOfDeath"],
+      "properties": {
+        "Enemy":       { "type": "string" },
+        "SpawnTime":   { "type": "string" },
+        "TimeOfDeath": { "type": "string" }
       }
-   },
-   "GiftBoxesOpened":[
-      {
-         "NewScrapValue":58,
-         "GiftScrapValue":17,
-         "GiftBoxAge":0,
-         "Collected":true
+    },
+
+    "FurnitureInfo": {
+      "type": "object",
+      "required": ["InStock", "Owned", "Stored", "ApparentPrice", "RealPrice", "Luck"],
+      "properties": {
+        "InStock":       { "type": "boolean" },
+        "Owned":         { "type": "boolean" },
+        "Stored":        { "type": "boolean" },
+        "ApparentPrice": { "type": "integer" },
+        "RealPrice":     { "type": "integer" },
+        "Luck":          { "type": "number" }
       }
-   ],
-   "MissedItems":[
-      {
-         "Value":60,
-         "ItemType":"Double-barrel",
-         "SpawnPosition":[
-            -25.7,
-            -219.1,
-            -8.0
-         ],
-         "DespawnPosition":[
-            -25.7,
-            -219.5,
-            -8.0
-         ],
-         "CollectedOnPreviousDay":false,
-         "ScrapInsideGiftValue":0
-      },
-      {
-         "Value":29,
-         "ItemType":"Whoopie cushion",
-         "SpawnPosition":[
-            -12.6,
-            -219.7,
-            -23.1
-         ],
-         "DespawnPosition":[
-            -33.6,
-            -226.5,
-            -7.0
-         ],
-         "CollectedOnPreviousDay":false,
-         "ScrapInsideGiftValue":0
+    },
+
+    "GiftBoxInfo": {
+      "type": "object",
+      "required": ["NewScrapValue", "GiftScrapValue", "GiftBoxAge", "Collected"],
+      "properties": {
+        "NewScrapValue":  { "type": "integer" },
+        "GiftScrapValue": { "type": "integer" },
+        "GiftBoxAge":     { "type": "integer" },
+        "Collected":      { "type": "boolean" }
       }
-   ]
+    },
+
+    "MissingItemInfo": {
+      "type": "object",
+      "required": ["Value", "ItemType", "SpawnPosition", "DespawnPosition", "CollectedOnPreviousDay", "ScrapInsideGiftValue"],
+      "properties": {
+        "Value":                  { "type": "integer" },
+        "ItemType":               { "type": "string" },
+        "SpawnPosition":          { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+        "DespawnPosition":        { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+        "CollectedOnPreviousDay": { "type": "boolean" },
+        "ScrapInsideGiftValue":   { "type": "integer" }
+      }
+    }
+  }
 }
 ```
