@@ -96,9 +96,10 @@ internal class FurnitureInfo(UnlockableItem Furniture, Terminal Terminal)
 {
   public bool InStock = Furniture.alwaysInStock || Terminal.ShipDecorSelection.Contains(Furniture.shopSelectionNode);
   public bool Owned = Furniture.alreadyUnlocked || Furniture.hasBeenUnlockedByPlayer;
+  public bool Stored = Furniture.inStorage;
   public int ApparentPrice = Furniture.shopSelectionNode.itemCost;
   public int RealPrice = Furniture.shopSelectionNode.terminalOptions[0].result.itemCost;
-  public float Luck = Furniture.luckValue;
+  public float Luck = (float?)StatsTracker.LuckValueField?.GetValue(Furniture) ?? 0;
 }
 
 internal class GiftBoxInfo(int newScrapValue, int GiftScrapValue, int GiftBoxAge)

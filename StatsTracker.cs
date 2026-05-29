@@ -36,6 +36,7 @@ public class StatsTracker : BaseUnityPlugin
   public static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
   public static readonly Type? BuyableVehicleType = AccessTools.TypeByName(nameof(BuyableVehicle));
   public static readonly FieldInfo? DeactivatedField = AccessTools.Field(typeof(GrabbableObject), nameof(GrabbableObject.deactivated));
+  public static readonly FieldInfo? LuckValueField = AccessTools.Field(typeof(UnlockableItem), nameof(UnlockableItem.luckValue));
 
   private void Awake()
   {
