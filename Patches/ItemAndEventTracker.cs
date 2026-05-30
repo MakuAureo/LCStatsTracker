@@ -69,7 +69,7 @@ internal class ItemAndEventTracker
       MethodInfo GiftBoxItemInternalValueSet = AccessTools.Method(StatsTracker.GiftBoxItemType, nameof(GiftBoxItem.InitializeAfterPositioning)) ?? AccessTools.Method(StatsTracker.GiftBoxItemType, nameof(GiftBoxItem.Start));
       Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(PopulateObjectInGiftValueForAllClients)));
       Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackGiftBoxAge)));
-      Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(IncreaseAgeOfAllGifts)));
+      Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), postfix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(IncreaseAgeOfAllGifts)));
     }
 
     Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(ItemAndEventTracker), nameof(TrackHive)));
@@ -252,6 +252,8 @@ internal class ItemAndEventTracker
 
   private static void IncreaseAgeOfAllGifts(RoundManager __instance)
   {
+    if (!__instance.currentLevel.spawnEnemiesAndScrap) return;
+    
     foreach (NetworkObjectReference giftRef in giftBoxAge.Keys.ToList())
       giftBoxAge[giftRef]++;
   }
