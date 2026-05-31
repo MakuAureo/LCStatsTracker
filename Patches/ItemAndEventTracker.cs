@@ -274,12 +274,13 @@ internal class ItemAndEventTracker
             gObject.itemProperties.name : 
             gObject.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, 
           gObject.scrapValue,
-          spawnPostionOfItem[gObject.NetworkObject],
+          spawnPostionOfItem.ContainsKey(gObject.NetworkObject) ? spawnPostionOfItem[gObject.NetworkObject] : null,
           gObject.transform.position,
           !objectsExtraSpawnedThisDay.Contains(gObject.NetworkObject),
           StatsTracker.GiftBoxItemType?.IsInstanceOfType(gObject) == true ? 
             Traverse.Create(gObject).Field(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>() : 
             0));
+
   }
 
   private static void TrackCollectedItems()
