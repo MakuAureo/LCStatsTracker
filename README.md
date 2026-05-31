@@ -204,7 +204,7 @@ Just HTTP request it and wait until the day is over to get your stats.
       "properties": {
         "Value":                  { "type": "integer" },
         "ItemType":               { "type": "string" },
-        "SpawnPosition":          { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+        "SpawnPosition":          { "type": ["array", "null"], "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
         "DespawnPosition":        { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
         "CollectedOnPreviousDay": { "type": "boolean" },
         "ScrapInsideGiftValue":   { "type": "integer" }
