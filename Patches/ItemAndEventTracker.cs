@@ -254,7 +254,7 @@ internal class ItemAndEventTracker
   {
     if (!__instance.currentLevel.spawnEnemiesAndScrap) return;
     
-    foreach (NetworkObjectReference giftRef in giftBoxAge.Keys.ToList())
+    foreach (NetworkObjectReference giftRef in giftBoxAge.Keys.ToArray())
       giftBoxAge[giftRef]++;
   }
 
