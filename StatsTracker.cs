@@ -84,38 +84,27 @@ public class StatsTracker : BaseUnityPlugin
   {
     float timeNormalized = TimeOfDay.Instance.normalizedTimeOfDay;
     float numberOfHours = TimeOfDay.Instance.numberOfHours;
-    bool createNewLine = false;
-    string newLine = "";
-    string amPM = "";
+    string amPM = "AM";
 
     int num = (int)(timeNormalized * (60f * numberOfHours)) + 360;
-		int num2 = (int)Mathf.Floor(num / 60);
-		if (!createNewLine)
-		{
-			newLine = " ";
-		}
-		else
-		{
-			newLine = "\n";
-		}
-		amPM = newLine + "AM";
-		if (num2 >= 24)
-		{
-			return "12:00 " + newLine + " AM";
-		}
-		if (num2 < 12)
-		{
-			amPM = newLine + "AM";
-		}
-		else
-		{
-			amPM = newLine + "PM";
-		}
-		if (num2 > 12)
-		{
-			num2 %= 12;
-		}
-		int num3 = num % 60;
+    int num2 = (int)Mathf.Floor(num / 60);
+    if (num2 >= 24)
+    {
+      return "12:00 " + " AM";
+    }
+    if (num2 < 12)
+    {
+      amPM = "AM";
+    }
+    else
+    {
+      amPM = "PM";
+    }
+    if (num2 > 12)
+    {
+      num2 %= 12;
+    }
+    int num3 = num % 60;
     string time = $"{num2:00}:{num3:00}".TrimStart('0') + amPM;
     return (time == "6:00 AM") ? "7:40 AM" : time;
   }
