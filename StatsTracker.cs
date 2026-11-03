@@ -14,98 +14,99 @@ namespace StatsTracker;
 [BepInDependency("OreoM.HQoL.73", BepInDependency.DependencyFlags.SoftDependency)]
 public class StatsTracker : BaseUnityPlugin
 {
-  public static StatsTracker Instance { get; private set; } = null!;
-  internal new static ManualLogSource Logger { get; private set; } = null!;
-  internal static Harmony? Harmony { get; set; }
+    public static StatsTracker Instance { get; private set; } = null!;
+    internal new static ManualLogSource Logger { get; private set; } = null!;
+    internal static Harmony? Harmony { get; set; }
 
-  internal static bool dayHasStarted = false;
-  internal static Util.Stats? DayStats;
-  internal static Util.HttpSSE LocalServer = new();
-  internal static Dictionary<string, string> VanillaInteriorNames = new Dictionary<string,string>
-  { 
+    internal static bool dayHasStarted = false;
+    internal static Util.Stats? DayStats;
+    internal static Util.HttpSSE LocalServer = new();
+    internal static Dictionary<string, string> VanillaInteriorNames = new Dictionary<string, string>
+  {
     {"Level1Flow", "Facility"},
     {"Level2Flow", "Mansion"},
     {"Level1FlowExtraLarge", "UnusedFacility"},
     {"Level1Flow3Exits", "Facility"},
-    {"Level3Flow", "Mineshaft"} 
+    {"Level3Flow", "Mineshaft"}
   };
 
-  public static readonly Type? EggItemType = AccessTools.TypeByName(nameof(KiwiBabyItem));
-  public static readonly Type? KnifeItemType = AccessTools.TypeByName(nameof(KnifeItem));
-  public static readonly Type? ShotgunItemType = AccessTools.TypeByName(nameof(ShotgunItem));
-  public static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
-  public static readonly Type? BuyableVehicleType = AccessTools.TypeByName(nameof(BuyableVehicle));
-  public static readonly FieldInfo? DeactivatedField = AccessTools.Field(typeof(GrabbableObject), nameof(GrabbableObject.deactivated));
-  public static readonly FieldInfo? LuckValueField = AccessTools.Field(typeof(UnlockableItem), nameof(UnlockableItem.luckValue));
+    public static readonly Type? EggItemType = AccessTools.TypeByName(nameof(KiwiBabyItem));
+    public static readonly Type? KnifeItemType = AccessTools.TypeByName(nameof(KnifeItem));
+    public static readonly Type? ShotgunItemType = AccessTools.TypeByName(nameof(ShotgunItem));
+    public static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
+    public static readonly Type? BuyableVehicleType = AccessTools.TypeByName(nameof(BuyableVehicle));
+    public static readonly FieldInfo? DeactivatedField = AccessTools.Field(typeof(GrabbableObject), nameof(GrabbableObject.deactivated));
+    public static readonly FieldInfo? LuckValueField = AccessTools.Field(typeof(UnlockableItem), nameof(UnlockableItem.luckValue));
 
-  private void Awake()
-  {
-    Logger = base.Logger;
-    Instance = this;
-
-    Patch();
-
-    LocalServer.Start();
-
-    Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
-  }
-
-  internal static void Patch()
-  {
-    Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
-
-    Logger.LogDebug("Patching...");
-
-    Patches.CompanyTracker.ApplyCompanyTrackerPatches(Harmony);
-    Patches.HazardTracker.ApplyHazardTrakcerPatches(Harmony);
-    Patches.ItemAndEventTracker.ApplyItemAndEventTrackerPatches(Harmony);
-    Patches.PlayerTracker.ApplyPlayerTrackerPatches(Harmony);
-    Patches.ServerEvents.ApplyServerEventPatches(Harmony);
-    Patches.ShipTracker.ApplyShipTrackerPatches(Harmony);
-    Patches.ShopTracker.ApplyShopTrackerPatches(Harmony);
-    Patches.SpawnTracker.ApplySpawnTrackerPatches(Harmony);
-
-    if (Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73"))
-      Patches.HQoLTracker.ApplyHQoLTrackerPatches(Harmony);
-
-    Logger.LogDebug("Finished patching!");
-  }
-
-  internal static void Unpatch()
-  {
-    Logger.LogDebug("Unpatching...");
-
-    Harmony?.UnpatchSelf();
-
-    Logger.LogDebug("Finished unpatching!");
-  }
-
-  internal static string GetCurrentTimeString()
-  {
-    float timeNormalized = TimeOfDay.Instance.normalizedTimeOfDay;
-    float numberOfHours = TimeOfDay.Instance.numberOfHours;
-    string amPM = "AM";
-
-    int num = (int)(timeNormalized * (60f * numberOfHours)) + 360;
-    int num2 = (int)Mathf.Floor(num / 60);
-    if (num2 >= 24)
+    private void Awake()
     {
-      return "12:00 " + " AM";
+        Logger = base.Logger;
+        Instance = this;
+
+        Patch();
+
+        LocalServer.Start();
+
+        Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
     }
-    if (num2 < 12)
+
+    internal static void Patch()
     {
-      amPM = "AM";
+        Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
+
+        Logger.LogDebug("Patching...");
+
+        Patches.CompanyTracker.ApplyCompanyTrackerPatches(Harmony);
+        Patches.HazardTracker.ApplyHazardTrakcerPatches(Harmony);
+        Patches.ItemAndEventTracker.ApplyItemAndEventTrackerPatches(Harmony);
+        Patches.MapTracker.ApplyMapTrackerPatches(Harmony);
+        Patches.PlayerTracker.ApplyPlayerTrackerPatches(Harmony);
+        Patches.ServerEvents.ApplyServerEventPatches(Harmony);
+        Patches.ShipTracker.ApplyShipTrackerPatches(Harmony);
+        Patches.ShopTracker.ApplyShopTrackerPatches(Harmony);
+        Patches.SpawnTracker.ApplySpawnTrackerPatches(Harmony);
+
+        if (Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73"))
+            Patches.HQoLTracker.ApplyHQoLTrackerPatches(Harmony);
+
+        Logger.LogDebug("Finished patching!");
     }
-    else
+
+    internal static void Unpatch()
     {
-      amPM = "PM";
+        Logger.LogDebug("Unpatching...");
+
+        Harmony?.UnpatchSelf();
+
+        Logger.LogDebug("Finished unpatching!");
     }
-    if (num2 > 12)
+
+    internal static string GetCurrentTimeString()
     {
-      num2 %= 12;
+        float timeNormalized = TimeOfDay.Instance.normalizedTimeOfDay;
+        float numberOfHours = TimeOfDay.Instance.numberOfHours;
+        string amPM = "AM";
+
+        int num = (int)(timeNormalized * (60f * numberOfHours)) + 360;
+        int num2 = (int)Mathf.Floor(num / 60);
+        if (num2 >= 24)
+        {
+            return "12:00 " + " AM";
+        }
+        if (num2 < 12)
+        {
+            amPM = "AM";
+        }
+        else
+        {
+            amPM = "PM";
+        }
+        if (num2 > 12)
+        {
+            num2 %= 12;
+        }
+        int num3 = num % 60;
+        string time = $"{num2:00}:{num3:00}".TrimStart('0') + amPM;
+        return (time == "6:00 AM") ? "7:40 AM" : time;
     }
-    int num3 = num % 60;
-    string time = $"{num2:00}:{num3:00}".TrimStart('0') + amPM;
-    return (time == "6:00 AM") ? "7:40 AM" : time;
-  }
 }
