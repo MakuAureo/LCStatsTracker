@@ -7,10 +7,20 @@ using UnityEngine;
 
 namespace StatsTracker.Util;
 
+internal class OutsideObjectInfo(string Name, Vector3 Position, float Yaw)
+{
+    public string Name = Name;
+    public double[] Position = DungeonMapUtil.ToArray(Position);
+    public double Yaw = Math.Round(Yaw, 1);
+}
+
 internal class MoonInfo(string Name, string Weather)
 {
     public string Name = Name;
     public string Weather = Weather;
+    public List<DungeonEntrance> Entrances = [];
+    public List<OutsideObjectInfo> OutsideObjects = [];
+    public List<double[]> RemovedTrees = [];
 }
 
 internal class DungeonInfo(int ItemCount, string Interior)
@@ -92,11 +102,14 @@ internal class PlayerStats(string name)
     }
 }
 
-internal class SpawnInfo(EnemyType EnemyType, string Time)
+internal class SpawnInfo(ulong Id, EnemyType EnemyType, string Time, Vector3 SpawnPosition)
 {
+    public ulong Id = Id;
     public string Enemy = EnemyType.enemyName;
     public string SpawnTime = Time;
     public string TimeOfDeath = "";
+    public double[] SpawnPosition = DungeonMapUtil.ToArray(SpawnPosition);
+    public double[]? EndPosition = null;
 }
 
 internal class FurnitureInfo(UnlockableItem Furniture, Terminal Terminal)
